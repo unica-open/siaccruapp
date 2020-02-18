@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+SPDX-FileCopyrightText: Copyright 2020 | CSI Piemonte
+SPDX-License-Identifier: EUPL-1.2
+-->
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+"http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<package name="home" extends="default" namespace="/">
+	
+		<action name="home"  class="homePageAction">
+			<result name="success" >/jsp/home/home.jsp</result>
+		</action>
+		<action name="home.selezionaAccount"  class="homePageAction" method="selezionaAccount">
+			<result name="success" >/jsp/home/home.jsp</result>
+		</action>
+		<action name="home.backSelezionaAccount"  class="homePageAction" method="backSelezionaAccount">
+			<result name="success" >/jsp/home/home.jsp</result>
+		</action>
+		<action name="home.selezionaNotificaPendente"  class="homePageAction" method="selezionaNotificaPendente">
+			<result name="success" type="redirect">${urlAzioneRichiesta}</result>
+		</action>
+		<action name="home.selezionaAttivitaPendente"  class="homePageAction" method="selezionaAttivitaPendente">
+			<result name="success" type="redirect">${urlAzioneRichiesta}</result>
+		</action>
+		<action name="home.selezionaAzione"  class="homePageAction" method="selezionaAzione">
+			<result name="success" type="redirect">${urlAzioneRichiesta}</result>
+		</action>
+		<action name="home.selezionaAnnoEsercizio"  class="homePageAction" method="selezionaAnnoEsercizio">
+			<result name="success" >/jsp/home/home.jsp</result>
+		</action>
+<!-- 		Azione inserita per retrocompatibilità con alcune url di test -->
+		<action name="home.visualizzaAzioneRichiesta"  class="azioneRichiestaAction">
+			<result name="success" >/jsp/azioneRichiesta/azioneRichiesta.jsp</result>
+		</action>
+		
+		<!-- Richiesta AJAX per definire come caricare la modale -->
+       <!--  <action name="selezionaModale" class="homePageActionBean" method="caricaModale">
+           	<result name="success" type="json">
+            	<param name="ignoreHierarchy">false</param>
+                <param name="includeProperties">
+                	errori.*,
+                    modale
+                </param>
+            </result>
+            <result name="success" >/jsp/home/home.jsp</result>
+        </action> -->
+        
+        <action name="logout">
+			<result name="success" type="redirect" >/../siacbilapp/logout.do</result>
+		</action>
+        
+        <action name="cruLogout" class="cruLogoutAction" >
+        	<result name="success" type="redirect">
+        	<param name="location">${logoutUrl}</param>
+        	<param name="prependServletContext">false</param>
+        	</result>
+        </action>
+        
+	</package>
+</struts>

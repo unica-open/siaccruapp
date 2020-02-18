@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+SPDX-FileCopyrightText: Copyright 2020 | CSI Piemonte
+SPDX-License-Identifier: EUPL-1.2
+-->
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+"http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<package name="login" extends="default" namespace="/login">
+		<action name="login" class="loginAction">
+			<result name="success" type="redirectAction" >
+				<param name="actionName">home</param>
+	         	<param name="namespace">/</param>
+         	</result>
+	        <result name="error">loginKO.jsp</result>
+		</action>
+	</package>
+</struts>

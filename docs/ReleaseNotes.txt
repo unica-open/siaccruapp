@@ -1,0 +1,90 @@
+------------------------
+SIAC Cru Application
+------------------------
+
+Funzionalità rilasciate
+--------------------------
+
+build 27/11/2019 versione 4.5.0
+ incremento versione per allineamento di tutte le dipendenze su SIAC-6881
+
+build 15/11/2019 versione 4.4.1
+ allinamento SIAC-6881
+
+build 07/10/2019 versione 4.4.0
+ correzione EOL
+
+build 26/06/2019 versione 4.3.0
+ clean_azione
+ 
+build 13/02/2019 versione 4.2.0
+ SIAC-6257
+
+build 23/01/2019 versione 4.1.0
+ refactoring
+
+build 25/10/2018 versione 4.0.0
+ incremento versione per modifiche architettura
+
+build 11/01/2018 versione 3.8.0
+ SIAC-5761
+
+build 28/12/2017 versione 3.6.2
+ Integrazione SIAC-5659
+
+build 09/11/2017 versione 3.6.0
+ SIAC-5386
+
+build 28/09/2017 versione 3.5.0
+ SIAC-5249
+
+build 31/08/2017 versione 3.4.0
+ SIAC-5022
+
+build 06/07/2017 versione 3.1.0
+ SIAC-5023
+
+Da rilasciare con versione 1.2.0
+- gestione multiente sull'azione tipo
+- gestione nuova relazione tra ruolo_op e cassa economale, da passare come per la sac all'azione richiesta
+- verificauo di siac_t_azione diventa un flag obbligatorio
+
+tag SVILUPPO-1.0.0-017	del (Raffael) 04/07/14
+Rilascio modifiche:
+  - pagine jsp senza espressioni freemarker 
+  - ordinamento di gruppi e azioni 
+  - gestione notifiche op.asincrone 
+  - patch su GenericAction e SessionHandler con transient su filed session
+  - chiamate al coreservice senza client ma usando l'autowired di spring
+
+
+
+build 2014-01-09 (Raffaela):
+- aggiunta la gestione dell'ente proprietario come variabile di processo e istanza, in modo da filtrare le attivita per ente
+- aggiunto servizio nel CoreService per modificare le variabili di processo senza eseguire il task
+
+build 2013-12-XX (Raffaela): 
+- Aggiunto parametro nell'azionerichiesta ID_BILANCIO = "it.csi.siac.siaccorser.model.idBilancio";
+
+
+build 2013-07-24: SVILUPPO-1.0.0-012
+- aggiunta la gestione dell'anno di esercizio come variabile di processo e istanza
+
+build 2013-07-22: SVILUPPO-1.0.0-010
+- risolto il problema dell'encoding dei caratteri nelle chiamate rest a bonita
+
+build 2013-07-10: SVILUPPO-1.0.0-008
+- definiti i nomi delle variabili di processo (in VariabileProcesso)
+- aggiunta l'implementazione di BpmService.getTaskInfo(String getIdIstanzaAttivita) con valutate le variabili
+- aggiunta la chiamata BpmService.getIdIstanzaProcesso(String getIdIstanzaAttivita)
+che viene usata dall'implementazione di CoreServiceImpl.execAzioneRichiesta() nel caso in cui
+l'azioneRichiesta sia di tipo ATTIVITA_PROCESSO
+
+build 2013-06-25: SVILUPPO-1.0.0-005
+- messe a fattor comune le classi perla gestione dell'autenticazione
+multisistema e fake
+- aggiunto il bonita client
+
+
+SVILUPPO-0.1.0-001:
+- versione con i DTO funzionanti in memoria

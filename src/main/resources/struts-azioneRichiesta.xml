@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+SPDX-FileCopyrightText: Copyright 2020 | CSI Piemonte
+SPDX-License-Identifier: EUPL-1.2
+-->
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+"http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<package name="azioneRichiesta" extends="default" namespace="/">
+		<action name="azioneRichiesta"  class="azioneRichiestaAction">
+			<result name="success" >/jsp/azioneRichiesta/azioneRichiesta.jsp</result>
+		</action>
+		<action name="azioneRichiesta.exec"  class="azioneRichiestaAction" method="eseguiAzioneRichiesta">
+			<result name="success" >/jsp/azioneRichiesta/azioneRichiesta.jsp</result>
+		</action>
+	</package>
+</struts>

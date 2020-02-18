@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+SPDX-FileCopyrightText: Copyright 2020 | CSI Piemonte
+SPDX-License-Identifier: EUPL-1.2
+-->
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+"http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<package name="notifichePendentiOpAsinc" extends="default" namespace="/">
+		
+		<action name="notifichePendentiOpAsinc"  class="notifichePendentiOperazioneAsincAction">
+			<result name="success" >/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
+			<result name="input">/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
+		</action>
+		
+		<action name="notifichePendentiOpAsinc.update"  class="notifichePendentiOperazioneAsincAction">
+			<result name="success" >/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
+			<result name="input">/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
+		</action>
+		
+		<action name="notifichePendentiOpAsinc.cerca"  class="notifichePendentiOperazioneAsincAction" method="cerca">
+			<result name="success" >/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
+			<result name="input">/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
+		</action>
+		
+		<action name="notifichePendentiOpAsinc.consultaDettaglio"  class="notifichePendentiOperazioneAsincAction" method="consultaDettaglio">
+			<result name="success" type="redirectAction">
+				<param name="actionName">dettaglioOperazioneAsinc</param>
+				<param name="namespace">/</param>
+				<param name="method">execute</param>
+			</result>
+			<result name="input">/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
+			<result name="backHomePageCrusctto" type="redirectAction">
+				<param name="actionName">home</param>
+				<param name="namespace">/</param>
+				<param name="method">execute</param>
+			</result>
+			
+		</action>
+		
+		
+		<action name="notifichePendentiOpAsinc.indietro"  class="notifichePendentiOperazioneAsincAction" method="indietro">
+			<result name="backHomePageCrusctto" type="redirectAction">
+				<param name="actionName">home</param>
+				<param name="namespace">/</param>
+				<param name="method">execute</param>
+			</result>
+		</action>
+		
+		<action name="notifichePendentiOpAsinc.annulla"  class="notifichePendentiOperazioneAsincAction" method="annulla">
+			<result name="success" >/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
+			<result name="input">/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
+		</action>
+		
+		
+		<action name="dettaglioOperazioneAsinc" class="dettaglioOperazioneAsincAction" >
+			<result name="success">/jsp/notifichePendentiOperazioneAsinc/consultaDettaglio.jsp</result>
+			<result name="input">/jsp/notifichePendentiOperazioneAsinc/consultaDettaglio.jsp</result>
+			<result name="backNotifichePendentiOpAsinc" type="redirectAction">
+				<param name="actionName">notifichePendentiOpAsinc</param>
+				<param name="namespace">/</param>
+				<param name="method">execute</param>
+			</result>
+		</action>
+		
+		<action name="dettaglioOperazioneAsinc.update"  class="dettaglioOperazioneAsincAction" >
+			<result name="success">/jsp/notifichePendentiOperazioneAsinc/consultaDettaglio.jsp</result>
+			<result name="input">/jsp/notifichePendentiOperazioneAsinc/consultaDettaglio.jsp</result>
+		</action>
+		
+	</package>
+</struts>

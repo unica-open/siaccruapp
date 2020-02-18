@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+SPDX-FileCopyrightText: Copyright 2020 | CSI Piemonte
+SPDX-License-Identifier: EUPL-1.2
+-->
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+  "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+    <include file="struts-global.xml" />
+	<include file="struts-home.xml" />
+	<include file="struts-azioneRichiesta.xml" />
+	<include file="struts-attivitaPendenti.xml" />
+	<include file="struts-notifichePendentiOpAsinc.xml" />
+</struts>

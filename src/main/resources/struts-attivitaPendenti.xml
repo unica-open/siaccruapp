@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+SPDX-FileCopyrightText: Copyright 2020 | CSI Piemonte
+SPDX-License-Identifier: EUPL-1.2
+-->
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+"http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<package name="attivitaPendenti" extends="default" namespace="/">
+		<action name="attivitaPendenti"  class="attivitaPendentiAction">
+			<result name="success" >/jsp/attivitaPendenti/attivitaPendenti.jsp</result>
+		</action>
+		<action name="attivitaPendenti.next"  class="attivitaPendentiAction" method="next">
+			<result name="success" >/jsp/attivitaPendenti/attivitaPendenti.jsp</result>
+		</action>
+		<action name="attivitaPendenti.prev"  class="attivitaPendentiAction" method="prev">
+			<result name="success" >/jsp/attivitaPendenti/attivitaPendenti.jsp</result>
+		</action>
+		<action name="attivitaPendenti.first"  class="attivitaPendentiAction" method="first">
+			<result name="success" >/jsp/attivitaPendenti/attivitaPendenti.jsp</result>
+		</action>
+		<action name="attivitaPendenti.last"  class="attivitaPendentiAction" method="last">
+			<result name="success" >/jsp/attivitaPendenti/attivitaPendenti.jsp</result>
+		</action>
+		<action name="attivitaPendenti.selezionaAttivita"  class="attivitaPendentiAction" method="selezionaAttivita">
+			<result name="success" type="redirect">${urlAzioneRichiesta}</result>
+		</action>
+	</package>
+</struts>

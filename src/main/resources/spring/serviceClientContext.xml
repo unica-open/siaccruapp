@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: Copyright 2020 | CSI Piemonte
+SPDX-License-Identifier: EUPL-1.2
+-->
+<beans 
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	    http://www.springframework.org/schema/beans/spring-beans.xsd
+	    http://www.springframework.org/schema/context
+	    http://www.springframework.org/schema/context/spring-context.xsd
+	    http://www.springframework.org/schema/util
+	    http://www.springframework.org/schema/util/spring-util.xsd">
+
+	
+	<util:map id="jaxwsCustomProperties">
+		<entry key="javax.xml.ws.client.connectionTimeout">
+			<value type="java.lang.Integer">600000</value>
+		</entry>
+		<entry key="javax.xml.ws.client.receiveTimeout">
+			<value type="java.lang.Integer">600000</value>
+		</entry>
+	</util:map>
+	
+
+
+	<bean id="coreService"
+		class="org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean">
+		<property name="serviceInterface"
+			value="it.csi.siac.siaccorser.frontend.webservice.CoreService" />
+
+		<property name="wsdlDocumentUrl"
+			value="${endpoint.url.service.core}/CoreService?wsdl" />
+		<property name="namespaceUri" value="http://siac.csi.it/cor/svc/1.0" />
+		<property name="serviceName" value="CoreService" />
+		<property name="endpointAddress" value="${endpoint.url.service.core}/CoreService" />
+        <property name="customProperties" ref="jaxwsCustomProperties"/>
+		<property name="lookupServiceOnStartup" value="false" />
+	</bean>
+
+
+	<bean id="operazioneAsincronaService"
+		class="org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean">
+		<property name="serviceInterface"
+			value="it.csi.siac.siaccorser.frontend.webservice.OperazioneAsincronaService" />
+		<property name="wsdlDocumentUrl"
+			value="${opasincService.endpoint}/OperazioneAsincronaService?wsdl" />
+		<property name="namespaceUri" value="http://siac.csi.it/cor/svc/1.0" />
+		<property name="serviceName" value="OperazioneAsincronaService" />
+		<property name="endpointAddress"
+			value="${opasincService.endpoint}/OperazioneAsincronaService" />
+		<property name="lookupServiceOnStartup" value="false" />
+	</bean>
+
+	
+    
+	
+</beans>

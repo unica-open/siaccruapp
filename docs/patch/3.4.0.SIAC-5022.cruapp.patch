@@ -1,0 +1,986 @@
+Index: src/main/java/it/csi/siac/siaccruapp/presentation/action/GenericAction.java
+===================================================================
+--- src/main/java/it/csi/siac/siaccruapp/presentation/action/GenericAction.java	(revision 16039)
++++ src/main/java/it/csi/siac/siaccruapp/presentation/action/GenericAction.java	(working copy)
+@@ -1,296 +1,307 @@
+-package it.csi.siac.siaccruapp.presentation.action;
+-
+-import it.csi.siac.siaccommon.util.log.LogUtil;
+-import it.csi.siac.siaccommonapp.util.login.LoginHandler;
+-import it.csi.siac.siaccorser.model.Account;
+-import it.csi.siac.siaccorser.model.AnnoBilancio;
+-import it.csi.siac.siaccorser.model.Cruscotto;
+-import it.csi.siac.siaccorser.model.Operatore;
+-import it.csi.siac.siaccorser.util.exception.ExceptionHandler;
+-import it.csi.siac.siaccruapp.model.exception.UtenteNonAbilitatoException;
+-import it.csi.siac.siaccruapp.presentation.handler.log.CruLogHandler;
+-import it.csi.siac.siaccruapp.presentation.handler.service.ServiceHandler;
+-import it.csi.siac.siaccruapp.presentation.handler.session.SessionHandler;
+-import it.csi.siac.siaccruapp.presentation.model.GenericModel;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-import java.util.Map;
+-
+-import javax.servlet.http.HttpServletRequest;
+-
+-import org.apache.log4j.Logger;
+-import org.apache.struts2.ServletActionContext;
+-import org.apache.struts2.interceptor.RequestAware;
+-import org.apache.struts2.interceptor.SessionAware;
+-
+-import com.opensymphony.xwork2.ActionSupport;
+-import com.opensymphony.xwork2.ModelDriven;
+-import com.opensymphony.xwork2.Preparable;
+-
+-
+-/**
+- * Action base per tutte le action
+- * 
+- * @author 
+- */
+-
+-@SuppressWarnings("rawtypes")
+-public class GenericAction extends ActionSupport implements ModelDriven<GenericModel>, Preparable, SessionAware, RequestAware  {
+-	
+-
+-	/**
+-	 * 
+-	 */
+-	private static final long serialVersionUID = -3258690966997691587L;
+-	
+-	private static Logger logger = Logger.getLogger(GenericAction.class.getName());
+-	
+-	private transient Map session;
+-	private transient Map request;
+-	
+-	protected CruLogHandler logHandler;
+-	protected ExceptionHandler exceptionHandler;
+-	protected LoginHandler loginHandler;
+-	protected SessionHandler sessionHandler;
+-	protected ServiceHandler serviceHandler;
+-	private GenericModel model;
+-	private String logoutUrl;
+-
+-	/** Utility per il log */
+-	protected transient LogUtil log = new LogUtil(this.getClass());
+-	
+-	/**
+-	 * @param session the session to set
+-	 */
+-	public void setSession(Map session) {
+-		this.session = session;
+-	}
+-	
+-	@Override
+-	public void setRequest(Map<String, Object> request)
+-	{
+-		this.request = request;
+-	}
+-
+-	/**
+-	 * @param logHandler the logHandler to set
+-	 */
+-	public void setLogHandler(CruLogHandler logHandler) {
+-		this.logHandler = logHandler;
+-	}
+-
+-
+-	/**
+-	 * @param exceptionHandler the exceptionHandler to set
+-	 */
+-	public void setExceptionHandler(ExceptionHandler exceptionHandler) {
+-		this.exceptionHandler = exceptionHandler;
+-	}
+-
+-
+-	/**
+-	 * @param loginHandler the loginHandler to set
+-	 */
+-	public void setLoginHandler(LoginHandler loginHandler) {
+-		this.loginHandler = loginHandler;
+-	}
+-
+-	/**
+-	 * @param sessionHandler the sessionHandler to set
+-	 */
+-	public void setSessionHandler(SessionHandler sessionHandler) {
+-		this.sessionHandler = sessionHandler;
+-	}
+-
+-	/**
+-	 * @param serviceHandler the serviceHandler to set
+-	 */
+-	public void setServiceHandler(ServiceHandler serviceHandler) {
+-		this.serviceHandler = serviceHandler;
+-	}
+-
+-	/**
+-	 * @return the model
+-	 */
+-	public GenericModel getModel() {
+-		return model;
+-	}
+-
+-	/**
+-	 * @param model the model to set
+-	 */
+-	public void setModel(GenericModel model) {
+-		this.model = (GenericModel)model;
+-	}
+-
+-	/**
+-	 * @return the logoutUrl
+-	 */
+-	public String getLogoutUrl() {
+-		return logoutUrl;
+-	}
+-
+-
+-	/**
+-	 * @param logoutUrl the logoutUrl to set
+-	 */
+-	public void setLogoutUrl(String logoutUrl) {
+-		this.logoutUrl = logoutUrl;
+-	}
+-
+-
+-	public void prepare() {
+-		sessionHandler.setSession(session);
+-		logHandler.setSessionHandler(sessionHandler);
+-		initOperatore();
+-		initListaAccount();
+-		initAccount();
+-	}
+-	
+-	public void initOperatore() {
+-		
+-		Operatore login = null;
+-		try {
+-			login = loginHandler.getOperatore(session);
+-		}	
+-		catch (Throwable t) {
+-			exceptionHandler.process(t,logHandler,logger);
+-		}
+-		
+-		Operatore operatore = null;
+-		try {
+-			operatore = sessionHandler.getOperatore();
+-			logHandler.start(logger,"login", login, "operatore",operatore);
+-			if (operatore==null) {
+-				operatore = login;
+-				sessionHandler.setOperatore(operatore);
+-			}
+-			else if (!operatore.getCodiceFiscale().equals(login.getCodiceFiscale())) {
+-				sessionHandler.clean();
+-				operatore = login;
+-				sessionHandler.setOperatore(operatore);
+-			}
+-		}
+-		catch (Throwable t) {
+-			exceptionHandler.process(t,logHandler,logger);
+-		}
+-		finally {
+-			logHandler.end(logger,"operatore", operatore);
+-		}
+-	}
+-	
+-	public void initListaAccount() {
+-		List<Account> listaAccount = null;
+-		try {
+-			logHandler.start(logger);
+-			listaAccount = sessionHandler.getAccounts();
+-			if (listaAccount==null) {
+-				listaAccount = serviceHandler.getAccounts();
+-				sessionHandler.setAccounts(listaAccount);
+-			}
+-			if (listaAccount.size()==0) {
+-				throw new UtenteNonAbilitatoException();
+-			}
+-		}
+-		catch (Throwable t) {
+-			model.addErrori(exceptionHandler.process(t,logHandler,logger));
+-		}
+-		finally {
+-			logHandler.end(logger,"listaAccount", listaAccount);
+-		}
+-	}
+-	
+-	public void initAccount() {
+-		try {
+-			logHandler.start(logger);
+-			if (getAccount()==null) {
+-				List<Account> listaAccount = sessionHandler.getAccounts();
+-				if (listaAccount.size()==1) {
+-					setupCruscotto(listaAccount.get(0));
+-				}
+-			}
+-		}
+-		catch (Throwable t) {
+-			model.addErrori(exceptionHandler.process(t,logHandler,logger));
+-		}
+-		finally {
+-			logHandler.end(logger,"account", sessionHandler.getAccount());
+-		}
+-	}
+-	
+-	protected Cruscotto setupCruscotto(Account account) {
+-		Cruscotto cruscotto = null;
+-		try {
+-			logHandler.start(logger,"account", account);
+-			cruscotto = serviceHandler.setupCruscotto(account);
+-			sessionHandler.setAccount(account);
+-			sessionHandler.setCruscotto(cruscotto);
+-			
+-		}
+-		catch (Throwable t) {
+-			model.addErrori(exceptionHandler.process(t,true,logHandler,logger));
+-		}
+-		finally {
+-			logHandler.end(logger,"cruscotto", cruscotto);
+-		}
+-		return cruscotto;
+-	}
+-	
+-	public Operatore getOperatore() {
+-		return sessionHandler.getOperatore();
+-		
+-	}
+-
+-	public Account getAccount() {
+-		return sessionHandler.getAccount();
+-		
+-	}
+-
+-	public List<AnnoBilancio> getAnniBilancio() {
+-		List<AnnoBilancio> anniBilancio = new ArrayList<AnnoBilancio>();
+-		if (sessionHandler.getCruscotto() != null) {
+-			anniBilancio = sessionHandler.getCruscotto().getAnniBilancio();
+-		}
+-		return anniBilancio;
+-	}
+-	
+-	public String getAnnoBilancioCorrente() {
+-		return sessionHandler.getCruscotto().getAnnoBilancio().getDescrizione();
+-
+-	}
+-	
+-	
+-	public boolean valorizzaCheckbox(String nomeParametro, Boolean valueCheckHidden){
+-		
+-		//System.out.println("valorizzaCheckbox ");
+-		
+-		
+-		HttpServletRequest request = ServletActionContext.getRequest();
+-		boolean risultato = false;
+-		
+-		//System.out.println("valorizzaCheckbox - nomeParametro:" + request.getParameter(nomeParametro)!=null ? request.getParameter(nomeParametro): " parametro vuoto");
+-		
+-		if(null==request.getParameter(nomeParametro)){
+-			
+-			if(valueCheckHidden!=null && valueCheckHidden)
+-				risultato = valueCheckHidden;
+-			else
+-				risultato = false;
+-		}else if("true".equalsIgnoreCase(request.getParameter(nomeParametro))){
+-			
+-			risultato = true;
+-			
+-		}else if("false".equalsIgnoreCase(request.getParameter(nomeParametro))){
+-			
+-		    risultato = false;
+-		}
+-		
+-		
+-		System.out.println("valorizzaCheckbox - risultato:" + risultato); 
+-		return risultato;
+-		
+-	}
+-	
+-
+-}
++package it.csi.siac.siaccruapp.presentation.action;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Map;
++
++import javax.servlet.http.HttpServletRequest;
++
++import org.apache.log4j.Logger;
++import org.apache.struts2.ServletActionContext;
++import org.apache.struts2.interceptor.RequestAware;
++import org.apache.struts2.interceptor.SessionAware;
++
++import com.opensymphony.xwork2.ActionSupport;
++import com.opensymphony.xwork2.ModelDriven;
++import com.opensymphony.xwork2.Preparable;
++
++import it.csi.siac.siaccommon.util.log.LogUtil;
++import it.csi.siac.siaccommonapp.handler.session.CommonSessionParameter;
++import it.csi.siac.siaccommonapp.util.login.LoginHandler;
++import it.csi.siac.siaccorser.model.Account;
++import it.csi.siac.siaccorser.model.AnnoBilancio;
++import it.csi.siac.siaccorser.model.Cruscotto;
++import it.csi.siac.siaccorser.model.Operatore;
++import it.csi.siac.siaccorser.util.exception.ExceptionHandler;
++import it.csi.siac.siaccruapp.model.exception.UtenteNonAbilitatoException;
++import it.csi.siac.siaccruapp.presentation.handler.log.CruLogHandler;
++import it.csi.siac.siaccruapp.presentation.handler.service.ServiceHandler;
++import it.csi.siac.siaccruapp.presentation.handler.session.SessionHandler;
++import it.csi.siac.siaccruapp.presentation.model.GenericModel;
++
++
++/**
++ * Action base per tutte le action
++ * 
++ * @author 
++ */
++
++@SuppressWarnings("rawtypes")
++public class GenericAction extends ActionSupport implements ModelDriven<GenericModel>, Preparable, SessionAware, RequestAware  {
++	
++
++	/**
++	 * 
++	 */
++	private static final long serialVersionUID = -3258690966997691587L;
++	
++	private static Logger logger = Logger.getLogger(GenericAction.class.getName());
++	
++	private transient Map session;
++	private transient Map request;
++	
++	protected CruLogHandler logHandler;
++	protected ExceptionHandler exceptionHandler;
++	protected LoginHandler loginHandler;
++	protected SessionHandler sessionHandler;
++	protected ServiceHandler serviceHandler;
++	private GenericModel model;
++	private String logoutUrl;
++
++	/** Utility per il log */
++	protected transient LogUtil log = new LogUtil(this.getClass());
++	
++	/**
++	 * @param session the session to set
++	 */
++	public void setSession(Map session) {
++		this.session = session;
++	}
++	
++	@Override
++	public void setRequest(Map<String, Object> request)
++	{
++		this.request = request;
++	}
++
++	/**
++	 * @param logHandler the logHandler to set
++	 */
++	public void setLogHandler(CruLogHandler logHandler) {
++		this.logHandler = logHandler;
++	}
++
++
++	/**
++	 * @param exceptionHandler the exceptionHandler to set
++	 */
++	public void setExceptionHandler(ExceptionHandler exceptionHandler) {
++		this.exceptionHandler = exceptionHandler;
++	}
++
++
++	/**
++	 * @param loginHandler the loginHandler to set
++	 */
++	public void setLoginHandler(LoginHandler loginHandler) {
++		this.loginHandler = loginHandler;
++	}
++
++	/**
++	 * @param sessionHandler the sessionHandler to set
++	 */
++	public void setSessionHandler(SessionHandler sessionHandler) {
++		this.sessionHandler = sessionHandler;
++	}
++
++	/**
++	 * @param serviceHandler the serviceHandler to set
++	 */
++	public void setServiceHandler(ServiceHandler serviceHandler) {
++		this.serviceHandler = serviceHandler;
++	}
++
++	/**
++	 * @return the model
++	 */
++	public GenericModel getModel() {
++		return model;
++	}
++
++	/**
++	 * @param model the model to set
++	 */
++	public void setModel(GenericModel model) {
++		this.model = (GenericModel)model;
++	}
++
++	/**
++	 * @return the logoutUrl
++	 */
++	public String getLogoutUrl() {
++		return logoutUrl;
++	}
++
++
++	/**
++	 * @param logoutUrl the logoutUrl to set
++	 */
++	public void setLogoutUrl(String logoutUrl) {
++		this.logoutUrl = logoutUrl;
++	}
++
++
++	public void prepare() {
++		sessionHandler.setSession(session);
++		logHandler.setSessionHandler(sessionHandler);
++		initOperatore();
++		initListaAccount();
++		initAccount();
++		
++		initEvidenziaAnno();
++	}
++	
++	public void initOperatore() {
++		
++		Operatore login = null;
++		try {
++			login = loginHandler.getOperatore(session);
++		}	
++		catch (Throwable t) {
++			exceptionHandler.process(t,logHandler,logger);
++		}
++		
++		Operatore operatore = null;
++		try {
++			operatore = sessionHandler.getOperatore();
++			logHandler.start(logger,"login", login, "operatore",operatore);
++			if (operatore==null) {
++				operatore = login;
++				sessionHandler.setOperatore(operatore);
++			}
++			else if (!operatore.getCodiceFiscale().equals(login.getCodiceFiscale())) {
++				sessionHandler.clean();
++				operatore = login;
++				sessionHandler.setOperatore(operatore);
++			}
++		}
++		catch (Throwable t) {
++			exceptionHandler.process(t,logHandler,logger);
++		}
++		finally {
++			logHandler.end(logger,"operatore", operatore);
++		}
++	}
++	
++	public void initListaAccount() {
++		List<Account> listaAccount = null;
++		try {
++			logHandler.start(logger);
++			listaAccount = sessionHandler.getAccounts();
++			if (listaAccount==null) {
++				listaAccount = serviceHandler.getAccounts();
++				sessionHandler.setAccounts(listaAccount);
++			}
++			if (listaAccount.size()==0) {
++				throw new UtenteNonAbilitatoException();
++			}
++		}
++		catch (Throwable t) {
++			model.addErrori(exceptionHandler.process(t,logHandler,logger));
++		}
++		finally {
++			logHandler.end(logger,"listaAccount", listaAccount);
++		}
++	}
++	
++	public void initAccount() {
++		try {
++			logHandler.start(logger);
++			if (getAccount()==null) {
++				List<Account> listaAccount = sessionHandler.getAccounts();
++				if (listaAccount.size()==1) {
++					setupCruscotto(listaAccount.get(0));
++				}
++			}
++		}
++		catch (Throwable t) {
++			model.addErrori(exceptionHandler.process(t,logHandler,logger));
++		}
++		finally {
++			logHandler.end(logger,"account", sessionHandler.getAccount());
++		}
++	}
++	
++	protected void initEvidenziaAnno() {
++		// TODO
++		Boolean evidenziaAnnoSelezionato = sessionHandler.getParametro(CommonSessionParameter.EVIDENZIA_ANNO_SELEZIONATO);
++		model.setEvidenziaAnnoSelezionato(Boolean.TRUE.equals(evidenziaAnnoSelezionato));
++	}
++	
++	protected Cruscotto setupCruscotto(Account account) {
++		Cruscotto cruscotto = null;
++		try {
++			logHandler.start(logger,"account", account);
++			cruscotto = serviceHandler.setupCruscotto(account);
++			sessionHandler.setAccount(account);
++			sessionHandler.setCruscotto(cruscotto);
++			
++			model.setEvidenziaAnnoSelezionato(false);
++			sessionHandler.setParametro(CommonSessionParameter.EVIDENZIA_ANNO_SELEZIONATO, null);
++		}
++		catch (Throwable t) {
++			model.addErrori(exceptionHandler.process(t,true,logHandler,logger));
++		}
++		finally {
++			logHandler.end(logger,"cruscotto", cruscotto);
++		}
++		return cruscotto;
++	}
++	
++	public Operatore getOperatore() {
++		return sessionHandler.getOperatore();
++		
++	}
++
++	public Account getAccount() {
++		return sessionHandler.getAccount();
++		
++	}
++
++	public List<AnnoBilancio> getAnniBilancio() {
++		List<AnnoBilancio> anniBilancio = new ArrayList<AnnoBilancio>();
++		if (sessionHandler.getCruscotto() != null) {
++			anniBilancio = sessionHandler.getCruscotto().getAnniBilancio();
++		}
++		return anniBilancio;
++	}
++	
++	public String getAnnoBilancioCorrente() {
++		return sessionHandler.getCruscotto().getAnnoBilancio().getDescrizione();
++
++	}
++	
++	
++	public boolean valorizzaCheckbox(String nomeParametro, Boolean valueCheckHidden){
++		
++		//System.out.println("valorizzaCheckbox ");
++		
++		
++		HttpServletRequest request = ServletActionContext.getRequest();
++		boolean risultato = false;
++		
++		//System.out.println("valorizzaCheckbox - nomeParametro:" + request.getParameter(nomeParametro)!=null ? request.getParameter(nomeParametro): " parametro vuoto");
++		
++		if(null==request.getParameter(nomeParametro)){
++			
++			if(valueCheckHidden!=null && valueCheckHidden)
++				risultato = valueCheckHidden;
++			else
++				risultato = false;
++		}else if("true".equalsIgnoreCase(request.getParameter(nomeParametro))){
++			
++			risultato = true;
++			
++		}else if("false".equalsIgnoreCase(request.getParameter(nomeParametro))){
++			
++		    risultato = false;
++		}
++		
++		
++		System.out.println("valorizzaCheckbox - risultato:" + risultato); 
++		return risultato;
++		
++	}
++	
++
++}
+Index: src/main/java/it/csi/siac/siaccruapp/presentation/action/HomePageAction.java
+===================================================================
+--- src/main/java/it/csi/siac/siaccruapp/presentation/action/HomePageAction.java	(revision 16039)
++++ src/main/java/it/csi/siac/siaccruapp/presentation/action/HomePageAction.java	(working copy)
+@@ -1,8 +1,9 @@
+-package it.csi.siac.siaccruapp.presentation.action;
+-
+-import it.csi.siac.siaccorser.model.Account;
+-import it.csi.siac.siaccorser.model.AnnoBilancio;
+-import it.csi.siac.siaccorser.model.Azione;
++package it.csi.siac.siaccruapp.presentation.action;
++
++import it.csi.siac.siaccommonapp.handler.session.CommonSessionParameter;
++import it.csi.siac.siaccorser.model.Account;
++import it.csi.siac.siaccorser.model.AnnoBilancio;
++import it.csi.siac.siaccorser.model.Azione;
+ import it.csi.siac.siaccorser.model.AzioneRichiesta;
+ import it.csi.siac.siaccorser.model.Cruscotto;
+ import it.csi.siac.siaccorser.model.ParametroAzioneRichiesta;
+@@ -136,12 +137,18 @@
+ 
+ 			p = new ParametroAzioneRichiesta();
+ 			p.setNome(ParametroAzioneRichiesta.CODICE_FASE_ANNO_BILANCIO);
+-			p.setValore(annoBilancio.getCodiceFase());
+-			azioneRichiesta.getParametri().add(p);
+-			
+-			// Se esiste carico l'anno precedente + relativa fase
+-			for (AnnoBilancio anno : getAnniBilancio()) {
+-			
++			p.setValore(annoBilancio.getCodiceFase());
++			azioneRichiesta.getParametri().add(p);
++			
++			// SIAC-5022
++			p = new ParametroAzioneRichiesta();
++			p.setNome(ParametroAzioneRichiesta.BILANCIO_ANNO_PRECEDENTE);
++			p.setValore(Boolean.toString(homePageModel.isEvidenziaAnnoSelezionato()));
++			azioneRichiesta.getParametri().add(p);
++			
++			// Se esiste carico l'anno precedente + relativa fase
++			for (AnnoBilancio anno : getAnniBilancio()) {
++			
+ 				String codiceFaseAnnoPrec = "";//anno.getCodiceFase();
+ 			
+ 				Integer annoPrecedente  =  Integer.parseInt(annoBilancio.getAnno())-1;
+@@ -191,12 +198,13 @@
+ 					
+ 					}
+ 				}
+-			}
+-			
+-			evidenziaAnnoSelezionato(Integer.valueOf(sessionHandler.getCruscotto().getAnnoBilancio().getAnno()));
+-			
+-			updateCruscotto();
+-		}
++			}
++			
++			evidenziaAnnoSelezionato(Integer.valueOf(sessionHandler.getCruscotto().getAnnoBilancio().getAnno()));
++			sessionHandler.setParametro(CommonSessionParameter.EVIDENZIA_ANNO_SELEZIONATO, homePageModel.isEvidenziaAnnoSelezionato());
++			
++			updateCruscotto();
++		}
+ 		catch (Throwable t) {
+ 			homePageModel.addErrori(exceptionHandler.process(t,logHandler,logger));
+ 		}
+@@ -219,17 +227,18 @@
+ 				// l'anno precedente all'ultimo anno di bilancio definito.
+ 				
+ 				//System.out.println("AnnoBilancio:" + Integer.valueOf(annoBilancio.getAnno()));
+-				//System.out.println("AnnoSelezionato:" + annoSelezionato);
+-				if (Integer.valueOf(annoBilancio.getAnno()).compareTo(annoSelezionato) > 0){
+-
+-					homePageModel.setEvidenziaAnnoSelezionato(Boolean.TRUE);
+-					break;
+-				}
+-			}
+-		}
+-	}
+-
+-	
++				//System.out.println("AnnoSelezionato:" + annoSelezionato);
++				if (Integer.valueOf(annoBilancio.getAnno()).compareTo(annoSelezionato) > 0){
++
++					homePageModel.setEvidenziaAnnoSelezionato(true);
++					return;
++				}
++			}
++		}
++		homePageModel.setEvidenziaAnnoSelezionato(false);
++	}
++
++	
+ 	public List<Account> getAccounts() {
+ 		return sessionHandler.getAccounts();
+ 	}
+Index: src/main/java/it/csi/siac/siaccruapp/presentation/model/GenericModel.java
+===================================================================
+--- src/main/java/it/csi/siac/siaccruapp/presentation/model/GenericModel.java	(revision 16039)
++++ src/main/java/it/csi/siac/siaccruapp/presentation/model/GenericModel.java	(working copy)
+@@ -1,76 +1,86 @@
+-package it.csi.siac.siaccruapp.presentation.model;
+-
+-import it.csi.siac.siaccorser.model.Errore;
+-import it.csi.siac.siaccorser.model.Messaggio;
+-
+-import java.io.Serializable;
+-import java.util.ArrayList;
+-import java.util.List;
+-
+-/**
+- * Model base per tutte le action del cruscotto
+- * 
+- * @author Spin Servizi per l'Innovazione
+- *
+- */
+-public class GenericModel implements Serializable {
+-	
+-	/**
+-	 * 
+-	 */
+-	private static final long serialVersionUID = -5068492002131725264L;
+-	private String titolo;
+-	private List<Errore> errori = new ArrayList<Errore>() ;
+-	private List<Messaggio> messaggi = new ArrayList<Messaggio>()  ;
+-	/**
+-	 * @return the titolo
+-	 */
+-	public String getTitolo() {
+-		return titolo;
+-	}
+-	/**
+-	 * @param titolo the titolo to set
+-	 */
+-	public void setTitolo(String titolo) {
+-		this.titolo = titolo;
+-	}
+-	/**
+-	 * @return the errori
+-	 */
+-	public List<Errore> getErrori() {
+-		return errori;
+-	}
+-	public void resetErrori() {
+-		this.errori = new ArrayList<Errore>() ;
+-	}
+-	
+-	public void addErrore(Errore errore) {
+-		this.errori.add(errore);
+-	}
+-	
+-	public void addErrori(List<Errore> list) {
+-		this.errori.addAll(list);
+-	}
+-	
+-	/**
+-	 * @return the messaggi
+-	 */
+-	public List<Messaggio> getMessaggi() {
+-		return messaggi;
+-	}
+-	
+-	public void resetMessaggi() {
+-		this.messaggi = new ArrayList<Messaggio>() ;
+-	}
+-	
+-	public void addMessaggio(Messaggio messaggio) {
+-		this.messaggi.add(messaggio);
+-	}
+-	
+-	public void addMessaggi(ArrayList<Messaggio> messaggi) {
+-		this.messaggi.addAll(messaggi);
+-	}
+-	
+-	
+-
+-}
++package it.csi.siac.siaccruapp.presentation.model;
++
++import it.csi.siac.siaccorser.model.Errore;
++import it.csi.siac.siaccorser.model.Messaggio;
++
++import java.io.Serializable;
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Model base per tutte le action del cruscotto
++ * 
++ * @author Spin Servizi per l'Innovazione
++ *
++ */
++public class GenericModel implements Serializable {
++	
++	/**
++	 * 
++	 */
++	private static final long serialVersionUID = -5068492002131725264L;
++	private String titolo;
++	private List<Errore> errori = new ArrayList<Errore>() ;
++	private List<Messaggio> messaggi = new ArrayList<Messaggio>();
++	
++	// SIAC-5022
++	private boolean evidenziaAnnoSelezionato = false;
++	/**
++	 * @return the titolo
++	 */
++	public String getTitolo() {
++		return titolo;
++	}
++	/**
++	 * @param titolo the titolo to set
++	 */
++	public void setTitolo(String titolo) {
++		this.titolo = titolo;
++	}
++	/**
++	 * @return the errori
++	 */
++	public List<Errore> getErrori() {
++		return errori;
++	}
++	public void resetErrori() {
++		this.errori = new ArrayList<Errore>() ;
++	}
++	
++	public void addErrore(Errore errore) {
++		this.errori.add(errore);
++	}
++	
++	public void addErrori(List<Errore> list) {
++		this.errori.addAll(list);
++	}
++	
++	/**
++	 * @return the messaggi
++	 */
++	public List<Messaggio> getMessaggi() {
++		return messaggi;
++	}
++	
++	public void resetMessaggi() {
++		this.messaggi = new ArrayList<Messaggio>() ;
++	}
++	
++	public void addMessaggio(Messaggio messaggio) {
++		this.messaggi.add(messaggio);
++	}
++	
++	public void addMessaggi(ArrayList<Messaggio> messaggi) {
++		this.messaggi.addAll(messaggi);
++	}
++	
++	public boolean isEvidenziaAnnoSelezionato() {
++		return evidenziaAnnoSelezionato;
++	}
++
++	public void setEvidenziaAnnoSelezionato(boolean evidenziaAnnoSelezionato) {
++		this.evidenziaAnnoSelezionato = evidenziaAnnoSelezionato;
++	}
++	
++
++}
+Index: src/main/java/it/csi/siac/siaccruapp/presentation/model/HomePageModel.java
+===================================================================
+--- src/main/java/it/csi/siac/siaccruapp/presentation/model/HomePageModel.java	(revision 16039)
++++ src/main/java/it/csi/siac/siaccruapp/presentation/model/HomePageModel.java	(working copy)
+@@ -17,14 +17,12 @@
+ 	private String notificaPendenteSelezionata;
+ 	private String attivitaPendenteSelezionata;
+ 	private String azioneSelezionata;
+-	private String azioneRichiesta;
+-	private String annoSelezionato;
+-	
+-	private boolean evidenziaAnnoSelezionato = false;
+-	
+-	/**
+-	 * Gestione per la modale della dashboard
+-	 */
++	private String azioneRichiesta;
++	private String annoSelezionato;
++	
++	/**
++	 * Gestione per la modale della dashboard
++	 */
+ 	private String modaleSelezionata;
+ 	private String apriModale="";
+ 	private String titoloModale="";
+@@ -161,17 +159,7 @@
+ 	 * @param annoSelezionato the annoSelezionato to set
+ 	 */
+ 	public void setAnnoSelezionato(String annoSelezionato) {
+-		this.annoSelezionato = annoSelezionato;
+-	}
+-
+-	public boolean isEvidenziaAnnoSelezionato() {
+-		return evidenziaAnnoSelezionato;
+-	}
+-
+-	public void setEvidenziaAnnoSelezionato(boolean evidenziaAnnoSelezionato) {
+-		this.evidenziaAnnoSelezionato = evidenziaAnnoSelezionato;
+-	}
+-	
+-	
+-
+-}
++		this.annoSelezionato = annoSelezionato;
++	}
++
++}
+Index: src/main/webapp/WEB-INF/jsp/include/headerSelezioneAnno.jsp
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/include/headerSelezioneAnno.jsp	(revision 16039)
++++ src/main/webapp/WEB-INF/jsp/include/headerSelezioneAnno.jsp	(working copy)
+@@ -7,13 +7,23 @@
+ 			  <s:if test="%{account!=null}">
+ 				<div class="dropdown pull-left login-text">
+ 					<a class="dropdown-toggle"
+-						data-toggle="dropdown"
+-						href="#"
+-						title="seleziona l'anno di bilancio su cui vuoi lavorare">
+-						Bilancio <s:property value="annoBilancioCorrente"/> <i class="icon-pencil"></i>
+-					</a>
+-					<div class="dropdown-menu span7" role="menu" aria-labelledby="dLabel">
+-						<s:form action="home.selezionaAnnoEsercizio.do" method="post" accept-charset="UTF-8">
++						data-toggle="dropdown"
++						href="#"
++						title="seleziona l'anno di bilancio su cui vuoi lavorare">
++						
++						<s:if test="evidenziaAnnoSelezionato">
++						<font color="red"> 
++							Bilancio  <s:property value="annoBilancioCorrente"/> 
++							<i class="icon-info-sign">&nbsp;Attenzione hai selezionato un anno precedente a quello di bilancio!</i>
++						</font>
++						</s:if>
++						<s:else>
++							Bilancio  <s:property value="annoBilancioCorrente"/>
++							<i class="icon-pencil"></i>
++						</s:else>	
++					</a>
++					<div class="dropdown-menu span7" role="menu" aria-labelledby="dLabel">
++						<s:form action="home.selezionaAnnoEsercizio.do" method="post" accept-charset="UTF-8">
+ 							<div class="form-horizontal">
+ 								<label class="control-label" for="annoda2">Anno&nbsp;</label>
+ 								 <s:select list="anniBilancio" listKey="%{idBilancio + '-' + idPeriodo}" listValue="descrizione" name="annoSelezionato" />
+Index: src/main/webapp/WEB-INF/jsp/include/infoUtenteLogin.jsp
+===================================================================
+--- src/main/webapp/WEB-INF/jsp/include/infoUtenteLogin.jsp	(revision 16039)
++++ src/main/webapp/WEB-INF/jsp/include/infoUtenteLogin.jsp	(working copy)
+@@ -2,14 +2,23 @@
+ <%@ taglib uri="/struts-tags" prefix="s" %>
+ 
+ <%-- Informazioni sull'Utente effettuante il login --%>
+-<div class="navbarLogin">
+-	<div class="container-fluid">
+-		<p class="login-text pull-left">
+-			BILANCIO <s:property value="cruscotto.annoBilancio.anno"  /> <s:property value="cruscotto.annoBilancio.descrizioneFase"  />
++<div class="navbarLogin">
++	<div class="container-fluid">
++		<p class="login-text pull-left">
++			<s:if test="evidenziaAnnoSelezionato">
++				<font color="red"> 
++					Bilancio <s:property value="annoBilancioCorrente"/>
++					<i class="icon-info-sign">&nbsp;Attenzione hai selezionato un anno precedente a quello di bilancio!</i>
++				</font>
++			</s:if>
++			<s:else>
++				Bilancio <s:property value="annoBilancioCorrente"/>
++				<i class="icon-pencil"></i>
++			</s:else>
++		</p>
++		<p class="login-text pull-right">
++			<s:property value="operatore.nome" /> <s:property value="operatore.cognome" /> <a href=<s:property value="logoutUrl" />  class="navbar-link">&nbsp;</a>
+ 		</p>
+-		<p class="login-text pull-right">
+-			<s:property value="operatore.nome" /> <s:property value="operatore.cognome" /> <a href=<s:property value="logoutUrl" />  class="navbar-link">&nbsp;</a>
+-		</p>
+ 	</div>
+ </div>
+ 

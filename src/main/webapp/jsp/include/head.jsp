@@ -8,5 +8,13 @@ SPDX-License-Identifier: EUPL-1.2
 <%-- Inclusione dell'HEAD --%>
 <r:include url="/ris/servizi/siac/include/head.html" resourceProvider="rp"/>
 
+<style>
+<!--
+div#portalHeader_title a { 
+   text-indent: -1000px !important 
+}
+-->
+</style>
+
 </head>
 

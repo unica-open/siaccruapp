@@ -3,9 +3,13 @@ SPDX-FileCopyrightText: Copyright 2020 | CSI Piemonte
 SPDX-License-Identifier: EUPL-1.2
 --%>
 <%@ taglib uri="/struts-tags" prefix="s" %>
+
+<%--vecchia gestione 
 <s:set name="content_head" value="" />
 <s:set name="content_breadcumb" value="%{'../errore/breadcumb.jsp'}" />
 <s:set name="content_body" value="%{'../errore/bodyUtenteNonAutenticato.jsp'}" />
+ --%>
+ 
 <s:include value="../common/frame.jsp"></s:include>
 
 <%@ taglib uri="/struts-tags" prefix="s" %>

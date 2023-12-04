@@ -239,6 +239,7 @@ SPDX-License-Identifier: EUPL-1.2
 
 <%-- <script type="text/javascript" src="/siaccruapp/js/jquery-1.8.2.min.js"></script> --%>
 <script type="text/javascript" src="${jspath}scripts.js"></script>
+<script type="text/javascript" src="${jspath}dashboard.js"></script>
 
 </body>
 </html>

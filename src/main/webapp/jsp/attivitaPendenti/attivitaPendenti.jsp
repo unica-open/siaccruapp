@@ -17,18 +17,25 @@ SPDX-License-Identifier: EUPL-1.2
 
 <div class="container-fluid-banner">
 
-<!-- //////////////////////////////////////////////////////////////////////////////// -->
-<!-- **********************  inclusione Banner portale   **************************** -->
+<%-- //////////////////////////////////////////////////////////////////////////////// --%>
+<%-- **********************  inclusione Banner portale   **************************** --%>
 
 <r:include url="/ris/servizi/siac/include/portalheader.html" resourceProvider="rp"/>
 
-<%-- Inclusione selezioneAnno --%>
-<s:include value="../include/selezioneAnno.jsp" />
+<%-- nel prototipo statico si chiama navbar.html  -->
+<%--  include la combo per selezionare l'anno tra quelli proposti e visualizza le info dell'utente --%>
 
+<div class="navbarLogin">
+	<div class="container-fluid">
+		<s:include value="../include/selezioneAnno.jsp" />
+	  	
+		<s:include value="../include/enteAccountOperatoreLogout.jsp" />
+	</div>
+</div>
 <r:include url="/ris/servizi/siac/include/applicationHeader.html" resourceProvider="rp"/>
 
-<!-- **********************  fine inclusione Banner portale   *********************** -->
-<!-- //////////////////////////////////////////////////////////////////////////////// -->
+<%-- **********************  fine inclusione Banner portale   *********************** --%>
+<%-- //////////////////////////////////////////////////////////////////////////////// --%>
 
 <%--breadcumb.JSP --%>
 <div class="row-fluid">
@@ -39,7 +46,8 @@ SPDX-License-Identifier: EUPL-1.2
 		</ul>
 	</div>
 </div>
-
+<a name="A-contenuti" title="A-contenuti"></a>
+</div>
 
 <div class="container-fluid"> 
 	<div class="row-fluid">
@@ -82,11 +90,12 @@ SPDX-License-Identifier: EUPL-1.2
 									Azioni <span class="caret"></span>
 								</button>
 								<ul class="dropdown-menu pull-right">
+								<%--SIAC-8332-REGP eliminato id attivita --%>
 									<li><a
-										href="<s:url action="attivitaPendenti.selezionaAttivita"><s:param name="azioneSelezionata"><s:property value="azione.uid"/></s:param><s:param name="idAttivita"><s:property value="idAttivita"/></s:param></s:url>">esegui</a></li>
+										href="<s:url action="attivitaPendenti.selezionaAttivita"><s:param name="azioneSelezionata"><s:property value="azione.uid"/></s:param><s:param name="uidVariazione"><s:property value="uidEntita"/></s:param><s:param name="tipologiaVariazione"><s:property value="tipologia"/></s:param></s:url>">esegui</a></li>
 								</ul>
 							</div>
-							<!-- /btn-group -->
+							<%-- /btn-group --%>
 						</td>
 					</tr>
 				</s:iterator>

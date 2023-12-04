@@ -84,6 +84,8 @@
 				return false;
   
 			});
+			
+			$(modalId).addClass('open');
 			  		  
         }
         else{
@@ -111,7 +113,7 @@
   
   $('.s-close-button').click(function(){
  
-	   $(this).parent().parent().animate({
+	   $(this).parent().parent().removeClass('open').animate({
 					left: -2000
 				},500);
 					
@@ -133,5 +135,13 @@
   $('[data-toggle="tooltip"]').tooltip({
       placement : 'top'
   });
+
+  
+  $(document).on('keydown', function(event) {
+	if (event.key == "Escape") {
+		$('.open .s-close-button').trigger('click');
+	}
+  });
+		
 
 })();

@@ -17,10 +17,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import it.csi.siac.siaccommon.util.log.LogUtil;
 import it.csi.siac.siaccommonapp.action.GenericAction;
 import it.csi.siac.siaccommonapp.handler.session.CommonSessionParameter;
 import it.csi.siac.siaccommonapp.handler.session.SessionHandler;
+import it.csi.siac.siaccommonapp.util.log.LogWebUtil;
 import it.csi.siac.siaccorser.model.Account;
 import it.csi.siac.siaccorser.model.AnnoBilancio;
 import it.csi.siac.siaccorser.model.Cruscotto;
@@ -41,7 +41,7 @@ public abstract class GenericCruAction<M extends GeneriCruModel> extends Generic
 	protected CruSessionHandler cruSessionHandler;
 
 	/** Utility per il log */
-	protected transient LogUtil log = new LogUtil(this.getClass());
+	protected transient LogWebUtil log = new LogWebUtil(this.getClass());
 
 	@PostConstruct
 	public void init() {
@@ -169,13 +169,18 @@ public abstract class GenericCruAction<M extends GeneriCruModel> extends Generic
 	}
 	
 	protected void initEvidenziaAnno() {
+		log.infoStart("initEvidenziaAnno");
 		Boolean evidenziaAnnoSelezionato = cruSessionHandler.getParametro(CommonSessionParameter.EVIDENZIA_ANNO_SELEZIONATO);
 		model.setEvidenziaAnnoSelezionato(Boolean.TRUE.equals(evidenziaAnnoSelezionato));
+		log.infoEnd("initEvidenziaAnno");
 	}
 	
 	protected Cruscotto setupCruscotto(Account account) {
+		String annoBilancio = System.getProperty("init.annoBilancio");
 
-		return setupCruscotto(account, Calendar.getInstance().get(Calendar.YEAR));
+		return setupCruscotto(
+				account, 
+				annoBilancio != null ? Integer.parseInt(annoBilancio) : Calendar.getInstance().get(Calendar.YEAR));
 	}
 	
 	protected Cruscotto setupCruscotto(Account account, Integer annoBilancio) {

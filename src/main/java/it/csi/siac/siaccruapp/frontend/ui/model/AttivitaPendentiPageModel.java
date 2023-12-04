@@ -25,6 +25,9 @@ public class AttivitaPendentiPageModel extends GeneriCruModel {
 	private int size = 10;
 	private int azioneSelezionata = 0;
 	private String idAttivita;
+	//SIAC-8332
+	private int uidVariazione;
+	private String tipologiaVariazione;
 
 	public AttivitaPendentiPageModel() { 
 		setTitolo("Attivita' pendenti"); 
@@ -114,6 +117,22 @@ public class AttivitaPendentiPageModel extends GeneriCruModel {
 		this.idAttivita = idAttivita;
 	}
 	
+	public int getUidVariazione() {
+		return uidVariazione;
+	}
+
+	public void setUidVariazione(int uidVariazione) {
+		this.uidVariazione = uidVariazione;
+	}
+
+	public String getTipologiaVariazione() {
+		return tipologiaVariazione;
+	}
+
+	public void setTipologiaVariazione(String tipologiaVariazione) {
+		this.tipologiaVariazione = tipologiaVariazione;
+	}
+
 	public int getStart() {
 		return offset+1;
 	}

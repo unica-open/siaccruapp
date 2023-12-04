@@ -32,14 +32,13 @@ SPDX-License-Identifier: EUPL-1.2
 		l'annotation @Value, con la sintassi ${property.name} <context:property-placeholder 
 		location="classpath:spring/*.properties" /> -->
 
-
-	<bean id="logoutUrl" class="java.lang.String" scope="session"  autowire-candidate="false">
-		<constructor-arg value="${sso.logout.url}" />
+	<!-- task-122 -->
+	<bean id="logoutHandlerBean" class="${sso.logoutHandler}" scope="session">
 	</bean>
 
 	<bean id="loginHandlerBean" class="${sso.loginHandler}" scope="session">
 	</bean>
-	
+
 	<bean id="sessionHandlerBean"
 		class="it.csi.siac.siaccruapp.frontend.ui.handler.session.CruSessionHandler"
 		scope="session">

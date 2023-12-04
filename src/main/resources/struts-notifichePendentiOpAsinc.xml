@@ -13,17 +13,17 @@ SPDX-License-Identifier: EUPL-1.2
 			<result name="input">/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
 		</action>
 		
-		<action name="notifichePendentiOpAsinc.update"  class="notifichePendentiOperazioneAsincAction">
+		<action name="notifichePendentiOpAsinc_update"  class="notifichePendentiOperazioneAsincAction">
 			<result name="success" >/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
 			<result name="input">/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
 		</action>
 		
-		<action name="notifichePendentiOpAsinc.cerca"  class="notifichePendentiOperazioneAsincAction" method="cerca">
+		<action name="notifichePendentiOpAsinc_cerca"  class="notifichePendentiOperazioneAsincAction" method="cerca">
 			<result name="success" >/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
 			<result name="input">/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
 		</action>
 		
-		<action name="notifichePendentiOpAsinc.consultaDettaglio"  class="notifichePendentiOperazioneAsincAction" method="consultaDettaglio">
+		<action name="notifichePendentiOpAsinc_consultaDettaglio"  class="notifichePendentiOperazioneAsincAction" method="consultaDettaglio">
 			<result name="success" type="redirectAction">
 				<param name="actionName">dettaglioOperazioneAsinc</param>
 				<param name="namespace">/</param>
@@ -39,7 +39,7 @@ SPDX-License-Identifier: EUPL-1.2
 		</action>
 		
 		
-		<action name="notifichePendentiOpAsinc.indietro"  class="notifichePendentiOperazioneAsincAction" method="indietro">
+		<action name="notifichePendentiOpAsinc_indietro"  class="notifichePendentiOperazioneAsincAction" method="indietro">
 			<result name="backHomePageCrusctto" type="redirectAction">
 				<param name="actionName">home</param>
 				<param name="namespace">/</param>
@@ -47,7 +47,7 @@ SPDX-License-Identifier: EUPL-1.2
 			</result>
 		</action>
 		
-		<action name="notifichePendentiOpAsinc.annulla"  class="notifichePendentiOperazioneAsincAction" method="annulla">
+		<action name="notifichePendentiOpAsinc_annulla"  class="notifichePendentiOperazioneAsincAction" method="annulla">
 			<result name="success" >/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
 			<result name="input">/jsp/notifichePendentiOperazioneAsinc/notifichePendenti.jsp</result>
 		</action>
@@ -63,10 +63,19 @@ SPDX-License-Identifier: EUPL-1.2
 			</result>
 		</action>
 		
-		<action name="dettaglioOperazioneAsinc.update"  class="dettaglioOperazioneAsincAction" >
+		<!-- task-166 -->
+		<action name="dettaglioOperazioneAsinc_update"  class="dettaglioOperazioneAsincAction" method="update">
 			<result name="success">/jsp/notifichePendentiOperazioneAsinc/consultaDettaglio.jsp</result>
 			<result name="input">/jsp/notifichePendentiOperazioneAsinc/consultaDettaglio.jsp</result>
 		</action>
 		
+		<!-- issue-8 dettaglioOperazioneAsinc -->
+		<action name="dettaglioOperazioneAsinc_indietro"  class="dettaglioOperazioneAsincAction" method="indietro">
+			<result name="backNotifichePendentiOpAsinc" type="redirectAction">
+				<param name="actionName">notifichePendentiOpAsinc</param>
+				<param name="namespace">/</param>
+				<param name="method">execute</param>
+			</result>
+		</action>
 	</package>
 </struts>

@@ -6,8 +6,8 @@ SPDX-License-Identifier: EUPL-1.2
 <%@ taglib uri="http://www.csi.it/taglibs/remincl-1.0" prefix="r" %>
 <%@ taglib uri="/struts-tags" prefix="s" %>
 
-  <s:if test="%{sessionHandler.account!=null}">
-	<div class="dropdown pull-left login-text">
+<div class="dropdown pull-left login-text">
+	<s:if test="%{sessionHandler.account!=null}">
 		<a class="dropdown-toggle"
 			data-toggle="dropdown"
 			href="#"
@@ -45,7 +45,8 @@ SPDX-License-Identifier: EUPL-1.2
 			    padding: 0 10px 0 10px;"><s:property value="cruscotto.messaggioInformativo" /></div>
 		
 		<div class="dropdown-menu span7" role="menu" aria-labelledby="dLabel">
-			<s:form action="home.selezionaAnnoEsercizio.do" method="post" accept-charset="UTF-8">
+			<%-- SIAC-7950 rimozione struts action extension .do --%>
+			<s:form action="home.selezionaAnnoEsercizio" method="post" accept-charset="UTF-8">
 				<div class="form-horizontal">
 					<label class="control-label" for="annoda2">Anno&nbsp;</label>
 					 <s:select list="anniBilancio" listKey="%{idBilancio + '-' + idPeriodo}" listValue="descrizione" name="annoSelezionato" />
@@ -54,6 +55,5 @@ SPDX-License-Identifier: EUPL-1.2
 				</div>
 			</s:form>
 		</div>
-	</div>
-  </s:if>	
-		
+	</s:if>
+</div>

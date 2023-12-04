@@ -11,7 +11,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import it.csi.siac.siaccommon.util.log.LogUtil;
+import it.csi.siac.siaccommonapp.util.log.LogWebUtil;
 import it.csi.siac.siaccorser.frontend.webservice.CoreService;
 import it.csi.siac.siaccorser.frontend.webservice.exception.ServiceException;
 import it.csi.siac.siaccorser.frontend.webservice.exception.SystemException;
@@ -21,8 +21,6 @@ import it.csi.siac.siaccorser.frontend.webservice.msg.FindAzione;
 import it.csi.siac.siaccorser.frontend.webservice.msg.FindAzioneResponse;
 import it.csi.siac.siaccorser.frontend.webservice.msg.GetAccounts;
 import it.csi.siac.siaccorser.frontend.webservice.msg.GetAccountsResponse;
-import it.csi.siac.siaccorser.frontend.webservice.msg.GetAttivitaPendenti;
-import it.csi.siac.siaccorser.frontend.webservice.msg.GetAttivitaPendentiResponse;
 import it.csi.siac.siaccorser.frontend.webservice.msg.GetAzioneRichiesta;
 import it.csi.siac.siaccorser.frontend.webservice.msg.GetAzioneRichiestaResponse;
 import it.csi.siac.siaccorser.frontend.webservice.msg.GetRuoli;
@@ -33,6 +31,8 @@ import it.csi.siac.siaccorser.frontend.webservice.msg.SetupCruscotto;
 import it.csi.siac.siaccorser.frontend.webservice.msg.SetupCruscottoResponse;
 import it.csi.siac.siaccorser.frontend.webservice.msg.UpdateCruscotto;
 import it.csi.siac.siaccorser.frontend.webservice.msg.UpdateCruscottoResponse;
+import it.csi.siac.siaccorser.frontend.webservice.msg.attpendenti.RicercaSinteticaGruppoAttivitaPendentiVariazione;
+import it.csi.siac.siaccorser.frontend.webservice.msg.attpendenti.RicercaSinteticaGruppoAttivitaPendentiVariazioneResponse;
 import it.csi.siac.siaccorser.model.Account;
 import it.csi.siac.siaccorser.model.AttivitaPendente;
 import it.csi.siac.siaccorser.model.Azione;
@@ -45,13 +45,14 @@ import it.csi.siac.siaccorser.model.Richiedente;
 import it.csi.siac.siaccorser.model.RuoloAccount;
 import it.csi.siac.siaccorser.model.ServiceResponse;
 import it.csi.siac.siaccorser.model.errore.ErroreCore;
+import it.csi.siac.siaccorser.model.paginazione.ParametriPaginazione;
 import it.csi.siac.siaccruapp.frontend.ui.handler.session.CruSessionHandler;
 import it.csi.siac.siaccruapp.frontend.ui.handler.session.CruSessionParameter;
 
 @Component
 public class ServiceHandler {
 	
-	private LogUtil log = new LogUtil(getClass());
+	private LogWebUtil log = new LogWebUtil(getClass());
 	private CruSessionHandler sessionHandler;
 	
 
@@ -84,6 +85,7 @@ public class ServiceHandler {
 		
 		} catch (Throwable t) {
 			log.error("getAccounts", t);
+			throw t;
 		} finally { 
 			log.infoEnd("getAccounts");
 		}
@@ -116,6 +118,7 @@ public class ServiceHandler {
 			cruscotto = response.getCruscotto();
 		} catch (Throwable t) {
 			log.error("setupCruscotto", t);
+			throw t;
 		} finally { 
 			log.infoEnd("setupCruscotto");
 		}
@@ -140,6 +143,7 @@ public class ServiceHandler {
 			result = response.getAzioneRichiesta();
 		} catch (Throwable t) {
 			log.error("saveAzioneRichiesta", t);
+			throw t;
 		} finally { 
 			log.infoEnd("saveAzioneRichiesta");
 		}
@@ -166,6 +170,7 @@ public class ServiceHandler {
 			cruscotto.setGruppiNotificheOperazioneAsincrona(response.getGruppiNotificheOperazioneAsincrona());
 		} catch (Throwable t) {
 			log.error("updateCruscotto", t);
+			throw t;
 		} finally { 
 			log.infoEnd("updateCruscotto");
 		}
@@ -188,6 +193,7 @@ public class ServiceHandler {
 			result = response.getAzioneRichiesta();
 		} catch (Throwable t) {
 			log.error("getAzioneRichiesta", t);
+			throw t;
 		} finally { 
 			log.infoEnd("getAzioneRichiesta");
 		}
@@ -208,32 +214,46 @@ public class ServiceHandler {
 			checkResponse(response);
 		} catch (Throwable t) {
 			log.error("execAzioneRichiesta", t);
+			throw t;
 		} finally { 
 			log.infoEnd("execAzioneRichiesta");
 		}
 	}
 	
-	public List<AttivitaPendente> getAttivitaPendenti(AzioneConsentita azioneConsentita, Integer annoBilancio,Integer idEnteProprietario, int offset, int size) {
+	public List<AttivitaPendente> getAttivitaPendenti(AzioneConsentita azioneConsentita, Integer annoBilancio,Integer idEnteProprietario, int offset, int size, int numeroPagina) {
 		
-		GetAttivitaPendenti request = new GetAttivitaPendenti();
-		GetAttivitaPendentiResponse response;
+//		GetAttivitaPendenti request = new GetAttivitaPendenti();
+//		GetAttivitaPendentiResponse response;
 		List<AttivitaPendente> attivitaPendenti = new ArrayList<AttivitaPendente>();
 		try {
-			log.infoStart("getAttivitaPendenti");
-			request.setRichiedente(sessionHandler.getRichiedente());
-			request.setAzioneConsentita(azioneConsentita);
-			request.setAnnoBilancio(annoBilancio);
-			request.setIdEnteProprietario(idEnteProprietario);
-			request.setOffset(offset);
-			request.setSize(size);
+			RicercaSinteticaGruppoAttivitaPendentiVariazione req = new RicercaSinteticaGruppoAttivitaPendentiVariazione();
+			req.setDataOra(new Date());
+			req.setAnnoBilancio(annoBilancio);
+			req.setSoloTotali(false);
+			req.setParametriPaginazione(new ParametriPaginazione());
+			req.getParametriPaginazione().setElementiPerPagina(size);
+			req.getParametriPaginazione().setNumeroPagina(numeroPagina);
+			req.setAzioneConsentita(azioneConsentita);
+			req.setRichiedente(sessionHandler.getRichiedente());
+			RicercaSinteticaGruppoAttivitaPendentiVariazioneResponse response = coreService.ricercaSinteticaGruppoAttivitaPendentiVariazione(req);
+
 			
-			response = coreService.getAttivitaPendenti(request);
-			
+//			log.infoStart("getAttivitaPendenti");
+//			request.setRichiedente(sessionHandler.getRichiedente());
+//			request.setAzioneConsentita(azioneConsentita);
+//			request.setAnnoBilancio(annoBilancio);
+//			request.setIdEnteProprietario(idEnteProprietario);
+//			request.setOffset(offset);
+//			request.setSize(size);
+//			
+//			response = coreService.getAttivitaPendenti(request);
+//			
 			checkResponse(response);
 			
 			attivitaPendenti = response.getAttivitaPendenti();
 		} catch (Throwable t) {
 			log.error("getAttivitaPendenti", t);
+			throw t;
 		} finally { 
 			log.infoEnd("getAttivitaPendenti");
 		}
@@ -284,6 +304,7 @@ public class ServiceHandler {
 			
 		} catch (Throwable t) {
 			log.error("findAccountByIdUtente", t);
+			throw t;
 		} finally { 
 			log.infoEnd("findAccountByIdUtente");
 		}
@@ -306,6 +327,7 @@ public class ServiceHandler {
 			
 		} catch (Throwable t) {
 			log.error("findRuoliByIdUtente", t);
+			throw t;
 		} finally { 
 			log.infoEnd("findRuoliByIdUtente");
 		}

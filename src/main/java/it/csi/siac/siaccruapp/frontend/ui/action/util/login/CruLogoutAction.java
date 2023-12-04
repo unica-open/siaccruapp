@@ -11,28 +11,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
 import it.csi.siac.siaccommonapp.action.LogoutAction;
+import it.csi.siac.siaccommonapp.util.logout.LogoutHandler;
 
 @Component
 @Scope(WebApplicationContext.SCOPE_REQUEST)
 public class CruLogoutAction extends LogoutAction {
-
-	private static final long serialVersionUID = 1L;
-
-	@Resource(name = "logoutUrl")    
-	private String logoutUrl;
 	
-	/**
-	 * @return the logoutUrl
-	 */
+	private static final long serialVersionUID = 8205031471629896810L;
+	
+	//task-122
+	@Resource(name = "logoutHandlerBean")
+	private LogoutHandler logoutHandler;
+
 	public String getLogoutUrl() {
-		return logoutUrl;
+
+		return logoutHandler.getLogoutUrl();
 	}
 
-	/**
-	 * @param logoutUrl
-	 *            the logoutUrl to set
-	 */
-	public void setLogoutUrl(String logoutUrl) {
-		this.logoutUrl = logoutUrl;
-	}
 }
+

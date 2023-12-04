@@ -29,12 +29,9 @@ SPDX-License-Identifier: EUPL-1.2
 
 
 	<bean id="coreService"
-		class="org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean">
-		<property name="serviceInterface"
-			value="it.csi.siac.siaccorser.frontend.webservice.CoreService" />
-
-		<property name="wsdlDocumentUrl"
-			value="${endpoint.url.service.core}/CoreService?wsdl" />
+		class="it.csi.siac.siaccommonapp.util.proxy.SiacJaxWsPortAdvisedProxyFactoryBean">
+		<property name="serviceInterface" value="it.csi.siac.siaccorser.frontend.webservice.CoreService" />
+		<property name="wsdlDocumentUrl" value="${endpoint.url.service.core}/CoreService?wsdl" />
 		<property name="namespaceUri" value="http://siac.csi.it/cor/svc/1.0" />
 		<property name="serviceName" value="CoreService" />
 		<property name="endpointAddress" value="${endpoint.url.service.core}/CoreService" />
@@ -42,17 +39,13 @@ SPDX-License-Identifier: EUPL-1.2
 		<property name="lookupServiceOnStartup" value="false" />
 	</bean>
 
-
 	<bean id="operazioneAsincronaService"
-		class="org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean">
-		<property name="serviceInterface"
-			value="it.csi.siac.siaccorser.frontend.webservice.OperazioneAsincronaService" />
-		<property name="wsdlDocumentUrl"
-			value="${opasincService.endpoint}/OperazioneAsincronaService?wsdl" />
+		class="it.csi.siac.siaccommonapp.util.proxy.SiacJaxWsPortAdvisedProxyFactoryBean">
+		<property name="serviceInterface" value="it.csi.siac.siaccorser.frontend.webservice.OperazioneAsincronaService" />
+		<property name="wsdlDocumentUrl" value="${opasincService.endpoint}/OperazioneAsincronaService?wsdl" />
 		<property name="namespaceUri" value="http://siac.csi.it/cor/svc/1.0" />
 		<property name="serviceName" value="OperazioneAsincronaService" />
-		<property name="endpointAddress"
-			value="${opasincService.endpoint}/OperazioneAsincronaService" />
+		<property name="endpointAddress" value="${opasincService.endpoint}/OperazioneAsincronaService" />
 		<property name="lookupServiceOnStartup" value="false" />
 	</bean>
 

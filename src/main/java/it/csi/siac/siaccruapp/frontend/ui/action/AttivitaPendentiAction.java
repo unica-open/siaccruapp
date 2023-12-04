@@ -4,31 +4,23 @@
 */
 package it.csi.siac.siaccruapp.frontend.ui.action;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.opensymphony.xwork2.Action;
 
-import it.csi.siac.siaccorser.frontend.webservice.CoreService;
-import it.csi.siac.siaccorser.frontend.webservice.msg.GetVariazioni;
-import it.csi.siac.siaccorser.frontend.webservice.msg.GetVariazioniResponse;
-import it.csi.siac.siaccorser.model.Account;
 import it.csi.siac.siaccorser.model.AnnoBilancio;
 import it.csi.siac.siaccorser.model.AttivitaPendente;
 import it.csi.siac.siaccorser.model.Azione;
 import it.csi.siac.siaccorser.model.AzioneConsentita;
 import it.csi.siac.siaccorser.model.AzioneRichiesta;
 import it.csi.siac.siaccorser.model.Cruscotto;
-import it.csi.siac.siaccorser.model.Errore;
 import it.csi.siac.siaccorser.model.GruppoAttivitaPendenti;
 import it.csi.siac.siaccorser.model.ParametroAzioneRichiesta;
-import it.csi.siac.siaccorser.model.Variazione;
 import it.csi.siac.siaccorser.model.errore.ErroreCore;
 import it.csi.siac.siaccorser.util.Costanti;
 import it.csi.siac.siaccruapp.frontend.ui.exception.AccountNonSelezionatoException;
@@ -54,10 +46,6 @@ public class AttivitaPendentiAction extends GenericCruAction<AttivitaPendentiPag
 	private List<AttivitaPendente> attivitaPendenti;
 	private String urlAzioneRichiesta;
 	
-	
-	
-	@Autowired
-	protected CoreService coreService;
 	
 	
 	
@@ -184,6 +172,8 @@ public class AttivitaPendentiAction extends GenericCruAction<AttivitaPendentiPag
 			int size = model.getSize();
 			int start = model.getStart();
 			int stop = model.getStop();
+			//SIAC-8332
+			int numeroPagina = (start/size);
 			if (idAzione==0) {
 				throw new RuntimeException("Id azione per attività pendenti non inizializzato");
 			}
@@ -198,60 +188,13 @@ public class AttivitaPendentiAction extends GenericCruAction<AttivitaPendentiPag
 			Integer annoBilancio = cruscotto.getAnnoBilancio().getAnno();
 			Integer idEnteProprietario = cruSessionHandler.getAccount().getEnte().getUid();
 			
-			/*
-			 * SIAC-6884 Variazioni decentrate
-			 */
-			Boolean idDecentrato = cruSessionHandler.getParametro(CruSessionParameter.UTENTE_VARIAZIONE_DECENTRATO);
-			Integer idAzionePerUtenteVariazioneDecentata = cruSessionHandler.getParametro(CruSessionParameter.ID_AZIONE_PER_UTENTE_VARIAZIONE_DECENTRATA);
-			if(idDecentrato && idAzionePerUtenteVariazioneDecentata!= null && idAzione==idAzionePerUtenteVariazioneDecentata){
-			attivitaPendenti = new ArrayList<AttivitaPendente>();
-			//Nel caso di utente per variazioni decentrato ricaviamo le sac associate
-			Account account = serviceHandler.findAccountByIdUtente(cruSessionHandler.getRichiedente(),annoBilancio);
-			if(account!= null && account.getStruttureAmministrativeContabili()!= null
-					&& !account.getStruttureAmministrativeContabili().isEmpty()){
-				//LISTA ID STRUTTURA AMMINISTRATIVA
-				List<Integer> idSacList = new ArrayList<Integer>();
-				for(int n=0; n<account.getStruttureAmministrativeContabili().size();n++){
-					idSacList.add(account.getStruttureAmministrativeContabili().get(n).getUid());
-				}
-				
-				GetVariazioni varRequest = new GetVariazioni();
-				varRequest.setSacIdList(idSacList);
-				varRequest.setFirst(model.getStart()-1);
-				varRequest.setMaxresult(model.getSize());
-				varRequest.setAnnoBilancio(annoBilancio);
-				varRequest.setRichiedente(cruSessionHandler.getRichiedente());
-				GetVariazioniResponse response = coreService.getVariazioniBySac(varRequest);
-				if(response != null){
-					cruSessionHandler.setTotaleAttivitaPendenti(response.getTotale().intValue());
-					model.setTotale(response.getTotale().intValue());
-					List<Variazione> variazioni = response.getVariazioni();
-					if(variazioni!= null && !variazioni.isEmpty()){
-						for(int f=0;f<variazioni.size();f++){
-							AttivitaPendente ap = new AttivitaPendente();
-							ap.setDataAperturaProposta(variazioni.get(f).getDataApertura());
-							ap.setDataChiusuraProposta(variazioni.get(f).getDataChiusura());
-							ap.setDirezioneProponente(variazioni.get(f).getDirezione());
-							ap.setDescrizione(variazioni.get(f).getNumeroVariazione() + " " + variazioni.get(f).getDescrizione());
-							ap.setId("" + variazioni.get(f).getUid());
-							Azione azione = new Azione();
-							azione.setUid(variazioni.get(f).getUid());
-							ap.setIdAttivita(""+variazioni.get(f).getUid());
-							ap.setAzione(azione);
-							attivitaPendenti.add(ap);
-						}
-					}
+			//SIAC-8332
+			for (AzioneConsentita azioneConsentita:cruscotto.getAzioniConsentite()) {
+				if (azioneConsentita.getAzione().getUid() == model.getIdAzione()) {
+					attivitaPendenti =serviceHandler.getAttivitaPendenti(azioneConsentita, annoBilancio,idEnteProprietario, offset, size, numeroPagina);
 				}
 			}
-			
-			
-			}else{
-				for (AzioneConsentita azioneConsentita:cruscotto.getAzioniConsentite()) {
-					if (azioneConsentita.getAzione().getUid() == model.getIdAzione()) {
-						attivitaPendenti =serviceHandler.getAttivitaPendenti(azioneConsentita, annoBilancio,idEnteProprietario, offset, stop-start+1);
-					}
-				}
-			}
+//			}
 			
 			
 			
@@ -259,9 +202,9 @@ public class AttivitaPendentiAction extends GenericCruAction<AttivitaPendentiPag
 				model.setTitolo((attivitaPendenti.get(0)).getAzione().getTitolo());
 			}else{
 				
-				List<Errore> errori = new ArrayList<Errore>();
-				errori.add(ErroreCore.ERRORE_DI_SISTEMA.getErrore("Errore nella lettura dell'attività pendente selezionata"));
-				model.addErrori(errori);
+//				List<Errore> errori = new ArrayList<Errore>();
+//				errori.add(ErroreCore.ERRORE_DI_SISTEMA.getErrore("Errore nella lettura dell'attività pendente selezionata"));
+				model.addErrore(ErroreCore.ERRORE_DI_SISTEMA.getErrore("Errore nella lettura dell'attività pendente selezionata"));
 				
 				return "errorRuntime";
 			}
@@ -308,7 +251,7 @@ public class AttivitaPendentiAction extends GenericCruAction<AttivitaPendentiPag
 					if (gruppoAttivitaPendenti.getAzione().getUid() == model.getAzioneSelezionata()) {
 							Azione azione = gruppoAttivitaPendenti.getAzione();
 							
-							azioneRichiesta.setIdAttivita(model.getIdAttivita());
+							azioneRichiesta.setIdAttivita(model.getUidVariazione() + "%&" + model.getTipologiaVariazione());
 							azioneRichiesta.setData(new Date());
 							azioneRichiesta.setDaCruscotto(false);
 							azioneRichiesta.setAzione(azione);

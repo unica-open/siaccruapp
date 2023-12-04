@@ -2,8 +2,30 @@
 SIAC Cru Application
 ------------------------
 
-Funzionalità rilasciate
+Funzionalita' rilasciate
 --------------------------
+build 30/07/2021 versione 4.11.0
+ SIAC-8300
+
+build 30/05/2020 versione 4.10.0
+ SIAC-7633
+
+build 30/04/2020 versione 4.9.0
+ open source
+ SIAC-7544
+ SIAC-7573
+
+build xx/xx/2020 versione 4.8.0
+ SIAC-7471
+
+build 18/12/2019 versione 4.7.0
+ SIAC-7252
+
+build 18/12/2019 versione 4.6.0
+ SIAC-6884
+
+build 06/12/2019 versione 4.5.1
+ SIAC-6884
 
 build 27/11/2019 versione 4.5.0
  incremento versione per allineamento di tutte le dipendenze su SIAC-6881

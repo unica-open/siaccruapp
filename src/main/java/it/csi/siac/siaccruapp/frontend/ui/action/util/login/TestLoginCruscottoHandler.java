@@ -10,7 +10,7 @@ import it.csi.siac.siaccommonapp.util.login.LoginHandler;
 import it.csi.siac.siaccorser.model.Operatore;
 
 
-public class TestLoginCruscottoHandler extends LoginHandler {
+public class TestLoginCruscottoHandler implements LoginHandler {
 
 	private static final long serialVersionUID = 6589268336444125090L;
 
@@ -43,7 +43,4 @@ public class TestLoginCruscottoHandler extends LoginHandler {
 		operatore.setCodiceFiscale(codiceFiscale);
 		return operatore;
 	}
-	
-	
-
 }

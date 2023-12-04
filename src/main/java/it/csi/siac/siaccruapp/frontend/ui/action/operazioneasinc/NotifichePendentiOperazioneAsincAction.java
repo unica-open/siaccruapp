@@ -4,6 +4,7 @@
 */
 package it.csi.siac.siaccruapp.frontend.ui.action.operazioneasinc;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -22,7 +23,6 @@ import it.csi.siac.siaccorser.frontend.webservice.msg.GetNotificheOperazioneAsin
 import it.csi.siac.siaccorser.frontend.webservice.msg.GetNotificheOperazioneAsincronaResponse;
 import it.csi.siac.siaccorser.model.Azione;
 import it.csi.siac.siaccorser.model.AzioneConsentita;
-import it.csi.siac.siaccorser.model.Errore;
 import it.csi.siac.siaccorser.model.NotificaOperazioneAsincrona;
 import it.csi.siac.siaccorser.model.errore.ErroreCore;
 import it.csi.siac.siaccorser.model.paginazione.ListaPaginata;
@@ -48,18 +48,42 @@ public class NotifichePendentiOperazioneAsincAction extends	GenericCruAction<Not
 
 	@Autowired
 	private transient OperazioneAsincronaService operazioneAsincronaService;
-	
+	//SIAC-8062
+	final static int DAYS_INTERVAL = 10;
 
 	@Override
 	public void prepare() throws Exception {
 		super.prepare();
 		
+		log.infoStart("initDate");
 		if(StringUtils.isEmpty(model.getDataDa()) && 
 				StringUtils.isEmpty(model.getDataA())){
 			// al primo caricamento imposto la data odierna da far vedere e calcolo gli ultimi dieci giorni 
-			Date pastDate = DateConverter.calcolaDataPerNumeroGiorni(new Date(),false, 10);
-			model.setDataDa(DateConverter.convertToString(pastDate));
+			Date pastDate = calcolaDataPerNumeroGiorni(new Date(),false, DAYS_INTERVAL);
+			//SIAC-7544
+			model.setDataDa(cruSessionHandler.containsKey(CruSessionParameter.DATA_DA_OPASINC) == true ? (String) sessionHandler.getParametro(CruSessionParameter.DATA_DA_OPASINC) : DateConverter.convertToString(pastDate));
 		}
+		log.infoEnd("initDate");
+		
+		//SIAC-7573
+		if(model.getFlagAltriUtenti() == null && cruSessionHandler.containsKey(CruSessionParameter.FLAG_ALTRI_UTENTI_OPASINC)) {
+			model.setFlagAltriUtenti((Boolean) cruSessionHandler.getParametro(CruSessionParameter.FLAG_ALTRI_UTENTI_OPASINC));
+		}
+
+		if(model.getHiddenFlagAltriUtenti() == null && cruSessionHandler.containsKey(CruSessionParameter.HIDDEN_FLAG_ALTRI_UTENTI_OPASINC)) {
+			model.setHiddenFlagAltriUtenti((Boolean) cruSessionHandler.getParametro(CruSessionParameter.HIDDEN_FLAG_ALTRI_UTENTI_OPASINC));
+		}
+		//
+		
+		//SIAC-7471
+//		List<String> paramTemp = new ArrayList<String>();
+//		if(model.getPagina() == 0 && paramTemp.add(getParameterFromStrutsRequest("pagina"))) {
+//			model.setPagina(new Integer(paramTemp.get(0)));
+//		}
+		
+		//SIAC-8218
+		getPaginaFromSession(false);
+		
 	}
 
 	@Override
@@ -96,61 +120,100 @@ public class NotifichePendentiOperazioneAsincAction extends	GenericCruAction<Not
 			return;
 		}
 		
-		cruSessionHandler.setParametro(CruSessionParameter.ID_AZIONE_OPASINC,
-				model.getIdAzione());
+		cruSessionHandler.setParametro(CruSessionParameter.ID_AZIONE_OPASINC, azione.getUid());
 
 		
 		GetNotificheOperazioneAsincrona req = new GetNotificheOperazioneAsincrona();
 		
-		if(StringUtils.isNotEmpty(model.getDataDa()))
-				req.setDataDa(model.getDataDa());
-				
-		if(StringUtils.isNotEmpty(model.getDataA())){
+		//SIAC-7544
+		if(StringUtils.isNotEmpty(model.getDataDa()) || cruSessionHandler.containsKey(CruSessionParameter.DATA_DA_OPASINC)) {
 			
-				Date dtA = DateConverter.convertFromString(model.getDataA());
+			//se ci sono dei parametri in sessione vi do' la precedente passata in sessione
+			req.setDataDa(model.getDataDa() == null ? (String) cruSessionHandler.getParametro(CruSessionParameter.DATA_DA_OPASINC) : model.getDataDa());
+			//se sono qui la data e' valida e la posso salvare
+			cruSessionHandler.setParametro(CruSessionParameter.DATA_DA_OPASINC, model.getDataDa());
+			//
+		}
 				
-				if (StringUtils.isEmpty(model.getDataDa())){
-					model.addErrore(ErroreCore.DATE_INCONGRUENTI.getErrore("Data Da non puo' essere nulla"));
-					return;
-				}
-				Date dtDa = DateConverter.convertFromString(model.getDataDa());
-				
-				Date pasteDataA = DateConverter.calcolaDataPerNumeroGiorni(new Date(), false,10);
-				
-				if(dtDa.after(dtA)){
-					model.addErrore(ErroreCore.DATE_INCONGRUENTI.getErrore("DataA non puo' essere inefriore a Data Da"));
-					return;
-				}
-				
-				if(pasteDataA.after(dtA)){
-					model.addErrore(new Errore("","Non e' possibile impostare un intervallo di ricerca superiore ai 10 giorni"));
-					return;
-				}
-				
-				// devo incrementare il dataA +1 perchè altrimenti non considera il giorno 'a' indicato, 
-				// ho provato sia con il between che con il <= 
-				req.setDataA(model.getDataA());
+		//SIAC-7544
+		if(StringUtils.isNotEmpty(model.getDataA()) || cruSessionHandler.containsKey(CruSessionParameter.DATA_A_OPASINC)){
+			
+			//se ci sono dei parametri in sessione vi do' la precedente passata in sessione
+			if(model.getDataA() == null) {
+				model.setDataA((String) cruSessionHandler.getParametro(CruSessionParameter.DATA_A_OPASINC));
+			}
+			//	
+
+			Date dtA = DateConverter.convertFromString(model.getDataA());
+			
+			if (StringUtils.isEmpty(model.getDataDa())){
+				model.addErrore(ErroreCore.DATE_INCONGRUENTI.getErrore("Data Da non puo' essere nulla"));
+				return;
+			}
+			Date dtDa = DateConverter.convertFromString(model.getDataDa());
+			
+			//SIAC-8062 il calcolo impediva una data precedente ad oggi 
+			//in quando la data inclusa nel calcolo era quella odierna
+//			Date pasteDataA = DateConverter.calcolaDataPerNumeroGiorni(new Date(), false,10);
+			
+			if(dtDa.after(dtA)){
+				model.addErrore(ErroreCore.DATE_INCONGRUENTI.getErrore("DataA non puo' essere inefriore a Data Da"));
+				return;
+			}
+			
+			if(!equalsOrBetween(dtDa, dtA, DAYS_INTERVAL)){
+				model.addErrore(ErroreCore.DATE_INCONGRUENTI.getErrore("Non e' possibile impostare un intervallo di ricerca superiore ai 10 giorni"));
+				return;
+			}
+			
+			// devo incrementare il dataA +1 perchè altrimenti non considera il giorno 'a' indicato, 
+			// ho provato sia con il between che con il <= 
+			req.setDataA(model.getDataA());
+			
+			//SIAC-7544
+			//se sono qui la data e' valida e la posso salvare
+			cruSessionHandler.setParametro(CruSessionParameter.DATA_A_OPASINC, model.getDataA());
+			//
+		
 		}else{
-				// se dataA e' vuota e sono al primo caricamnento, la setto con dataDa +10
-				if((model.getListaPaginata()==null || model.getListaPaginata().isEmpty())
-								&& StringUtils.isEmpty(model.getDataA())){
-					
-					model.setDataA(DateConverter.convertToString(new Date()));
-					req.setDataA(model.getDataA());
-				}
+			// se dataA e' vuota e sono al primo caricamnento, la setto con dataDa +10
+			if((model.getListaPaginata()==null || model.getListaPaginata().isEmpty())
+							&& StringUtils.isEmpty(model.getDataA())){
+				
+				model.setDataA(DateConverter.convertToString(new Date()));
+				req.setDataA(model.getDataA());
+				
+			}
 		}
 		
 		
+		
+		model.setFlagAltriUtenti(valorizzaCheckbox("flagAltriUtenti", model.getHiddenFlagAltriUtenti()));
+		
+		//SIAC-7537
+		if(model.getFlagAltriUtenti() == null && cruSessionHandler.containsKey(CruSessionParameter.FLAG_ALTRI_UTENTI_OPASINC)) {
+			model.setFlagAltriUtenti((Boolean) cruSessionHandler.getParametro(CruSessionParameter.FLAG_ALTRI_UTENTI_OPASINC));
+		}
+		
+		cruSessionHandler.setParametro(CruSessionParameter.FLAG_ALTRI_UTENTI_OPASINC, model.getFlagAltriUtenti());
+		cruSessionHandler.setParametro(CruSessionParameter.HIDDEN_FLAG_ALTRI_UTENTI_OPASINC, model.getHiddenFlagAltriUtenti());
+		
+		if(model.getCodiceStato() == null && cruSessionHandler.containsKey(CruSessionParameter.STATO_OPASINC)) {
+			model.setCodiceStato((String) cruSessionHandler.getParametro(CruSessionParameter.STATO_OPASINC));
+		}
+		
 		req.setCodiceStato(model.getCodiceStato());
 		
-		model.setFlagAltriUtenti( valorizzaCheckbox("flagAltriUtenti", model.getHiddenFlagAltriUtenti()));
+		cruSessionHandler.setParametro(CruSessionParameter.STATO_OPASINC, model.getCodiceStato());
+		
+		//
 		
 		req.setFlagAltriUtenti(model.getFlagAltriUtenti());
 		
 		req.setRichiedente(cruSessionHandler.getRichiedente());
 		req.setAccountId(cruSessionHandler.getAccount().getUid());
 		req.setEnteProprietarioId(cruSessionHandler.getAccount().getEnte().getUid());
-		req.setAzioneId(model.getIdAzione());
+		req.setAzioneId(azione.getUid());
 
 		ParametriPaginazione pp = new ParametriPaginazione();
 		pp.setElementiPerPagina(10);
@@ -167,7 +230,9 @@ public class NotifichePendentiOperazioneAsincAction extends	GenericCruAction<Not
 		model.setListaPaginata(response.getElencoPaginato());
 		cruSessionHandler.setParametro(CruSessionParameter.ELENCO_OPASINC,
 				response.getElencoPaginato());
-
+		
+		//SIAC-8218
+		cruSessionHandler.setParametro(CruSessionParameter.PAGINA_ELENCO_OPERAZIONE_ASINCRONE, model.getPagina());
 
 		model.setTitolo(azione.getTitolo());
 	}
@@ -182,7 +247,6 @@ public class NotifichePendentiOperazioneAsincAction extends	GenericCruAction<Not
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
 	public String consultaDettaglio() throws Exception {
 		
 		final String methodName = "consultaDettaglio";
@@ -223,6 +287,7 @@ public class NotifichePendentiOperazioneAsincAction extends	GenericCruAction<Not
 		return SUCCESS;
 	}
 
+	@SuppressWarnings("unchecked")
 	private void initListaPaginata() {
 		model.setListaPaginata((ListaPaginata<NotificaOperazioneAsincrona>) cruSessionHandler.getParametro(CruSessionParameter.ELENCO_OPASINC));
 	}
@@ -261,7 +326,76 @@ public class NotifichePendentiOperazioneAsincAction extends	GenericCruAction<Not
 		model.setPagina(0);
 		model.setListaPaginata(null);
 		
+		//SIAC-7573
+		cruSessionHandler.clean(CruSessionParameter.DATA_A_OPASINC.getName());
+		cruSessionHandler.clean(CruSessionParameter.STATO_OPASINC.getName());
+		cruSessionHandler.clean(CruSessionParameter.DATA_DA_OPASINC.getName());
+		cruSessionHandler.clean(CruSessionParameter.ELENCO_OPASINC.getName());
+		cruSessionHandler.clean(CruSessionParameter.FLAG_ALTRI_UTENTI_OPASINC.getName());
+		cruSessionHandler.clean(CruSessionParameter.HIDDEN_FLAG_ALTRI_UTENTI_OPASINC.getName());
+		//
+		
+		//SIAC-8218
+		getPaginaFromSession(true);
 	}
-
 	
+	/**
+	 * SIAC-8062
+	 * 
+	 * @param <Date> date
+	 * @param <boolean> lower
+	 * @param <int> daysInterval
+	 * @return <Date>
+	 */
+	private Date getDateWithDayInterval(Date date, boolean lower, int daysInterval) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.DATE, lower ? -daysInterval : daysInterval);
+		return calendar.getTime();
+	}
+	
+	/**
+	 * SIAC-8062
+	 * 
+	 * @param <Date> dateDa
+	 * @param <Date> dateA
+	 * @param <int> daysInterval
+	 * @return <boolean>
+	 */
+	protected boolean equalsOrBetween(Date dateDa, Date dateA, int daysInterval) {
+		if(dateDa == null) {
+			return false;
+		}
+		
+		Date maxInterval = getDateWithDayInterval(dateDa, false, daysInterval);
+		Date minInterval = getDateWithDayInterval(dateA != null ? dateA : maxInterval, true, daysInterval);
+		
+		if((dateA.before(maxInterval) || dateA.equals(maxInterval))
+				&& (dateDa.after(minInterval) || dateDa.equals(minInterval))) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	//SIAC-8218
+	private void getPaginaFromSession(boolean cleanSessionAfterGet) {
+		if(model.getPagina() == 0 && cruSessionHandler.containsKey(CruSessionParameter.PAGINA_ELENCO_OPERAZIONE_ASINCRONE)) {
+			model.setPagina((Integer) cruSessionHandler.getParametro(CruSessionParameter.PAGINA_ELENCO_OPERAZIONE_ASINCRONE));
+		}
+		if(cleanSessionAfterGet) {
+			cruSessionHandler.clean(CruSessionParameter.PAGINA_ELENCO_OPERAZIONE_ASINCRONE.getName());
+		}
+	}
+	
+	private Date calcolaDataPerNumeroGiorni(Date date, boolean b, int numerogiorni) {
+
+		Date now = new Date();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(now);
+		calendar.add(Calendar.DATE, -numerogiorni);
+		return calendar.getTime();
+	}
+	
+
 }

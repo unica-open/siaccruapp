@@ -29,8 +29,8 @@ SPDX-License-Identifier: EUPL-1.2
 
 <r:include url="/ris/servizi/siac/include/portalheader.html" resourceProvider="rp"/>
 
-<!-- nel prototipo statico si chiama navbar.html  -->
-<!--  include la combo per selezionare l'anno tra quelli proposti e visualizza le info dell'utente -->
+<%-- nel prototipo statico si chiama navbar.html  --%>
+<%--  include la combo per selezionare l'anno tra quelli proposti e visualizza le info dell'utente --%>
 <s:include value="../include/infoUtenteLogin.jsp" />
 
 <r:include url="/ris/servizi/siac/include/applicationHeader.html" resourceProvider="rp"/>
@@ -59,30 +59,30 @@ SPDX-License-Identifier: EUPL-1.2
 	<s:form action="notifichePendentiOpAsinc" method="post">
 
 			<s:if test="hasActionMessages()">
-						<%-- Messaggio di WARNING --%>
-						<div class="alert alert-warning">
-							<button type="button" class="close" data-dismiss="alert">&times;</button>
-							<strong>Attenzione!!</strong><br>
-							<ul>
-								<s:iterator value="messaggi">
-									<li><s:property value="codice"/> - <s:property value="descrizione"/> </li>
-								</s:iterator>
-							</ul>
-						</div>
+				<%-- Messaggio di WARNING --%>
+				<div class="alert alert-warning">
+					<button type="button" class="close" data-dismiss="alert">&times;</button>
+					<strong>Attenzione!!</strong><br>
+					<ul>
+						<s:iterator value="messaggi">
+							<li><s:property value="codice"/> - <s:property value="descrizione"/> </li>
+						</s:iterator>
+					</ul>
+				</div>
 			</s:if>
 
 
 			<s:if test="errori.size > 0">
-						<%-- Messaggio di ERROR --%>
-						<div class="alert alert-error">
-							<button type="button" class="close" data-dismiss="alert">&times;</button>
-							<strong>Attenzione!!</strong><br>
-							<ul>
-								<s:iterator value="errori">
-									<li><s:property value="testo"/> </li>
-								</s:iterator>
-							</ul>
-						</div>
+				<%-- Messaggio di ERROR --%>
+				<div class="alert alert-error">
+					<button type="button" class="close" data-dismiss="alert">&times;</button>
+					<strong>Attenzione!!</strong><br>
+					<ul>
+						<s:iterator value="errori">
+							<li><s:property value="testo"/> </li>
+						</s:iterator>
+					</ul>
+				</div>
 			</s:if>
 
 		
@@ -117,7 +117,7 @@ SPDX-License-Identifier: EUPL-1.2
 					
 					<div class="control-group">
 						
-						<label for="flagAltriUtenti" class="radio inline">Altri utenti </label>
+						<label for="flagAltriUtenti" class="control-label">Altri utenti </label>
 						
 						<div class="controls">
 							
@@ -128,8 +128,8 @@ SPDX-License-Identifier: EUPL-1.2
 					</div>
 				
 					<p class="margin-medium">
-				  		<%-- <a class="btn btn-secondary" href="<s:url action="notifichePendentiOpAsinc.annulla"/>">annulla</a> --%>
-				  		<s:submit cssClass="btn btn-primary pull-right" action="notifichePendentiOpAsinc.cerca" value="cerca" /> 
+				  		<%-- <a class="btn btn-secondary" href="<s:url action="notifichePendentiOpAsinc_annulla"/>">annulla</a> --%>
+				  		<s:submit cssClass="btn btn-primary pull-right" action="notifichePendentiOpAsinc_cerca" value="cerca" /> 
 					</p>
 				
 				</fieldset>
@@ -137,7 +137,7 @@ SPDX-License-Identifier: EUPL-1.2
 		</div>	
 		
 		<%-- <p class="margin-medium">
-			  <a class="btn btn-secondary" href="<s:url action="notifichePendentiOpAsinc.annulla"/>">annulla</a>
+			  <a class="btn btn-secondary" href="<s:url action="notifichePendentiOpAsinc_annulla"/>">annulla</a>
 			  <s:submit cssClass="btn btn-primary pull-right" action="notifichePendentiOpAsinc.cerca" value="cerca" /> 
 		</p>	 --%>
 		
@@ -181,7 +181,7 @@ SPDX-License-Identifier: EUPL-1.2
 							<div class="btn-group">
 								<button class="btn dropdown-toggle" data-toggle="dropdown">Azioni<span class="caret"></span></button>
 								<ul class="dropdown-menu pull-right">
-									<li><a href="<s:url action="notifichePendentiOpAsinc.consultaDettaglio">
+									<li><a href="<s:url action="notifichePendentiOpAsinc_consultaDettaglio">
 													<s:param name="index" value="#st.index"/>
 												</s:url>">Consulta</a></li> 	
 								</ul>
@@ -201,26 +201,27 @@ SPDX-License-Identifier: EUPL-1.2
 			
 			<s:if test="listaPaginata.totaleElementi != 0">
 				
-				<div class="row pagination_conth">
-					  <div id="risultatiricerca_info2" class="span6"><s:property value="listaPaginata.numeroElementoInizio"/> - <s:property value="listaPaginata.numeroElementoFine"/>
-					  	 di <s:property value="listaPaginata.totaleElementi"/> risultati</div>   
-					  <div class="span6">      
-					           
-						  <div id="paginazione2" class="pagination pagination-right">
-							  <ul>
-								<li><s:if test="not listaPaginata.primaPagina"><a href="<s:url method="update" action="notifichePendentiOpAsinc"><s:param name="pagina" value="0"/></s:url>">&laquo; inizio</a></s:if><s:else><a href="#">&laquo; inizio</a></s:else></li>
-								<li><s:if test="listaPaginata.hasPaginaPrecedente"><a href="<s:url method="update" action="notifichePendentiOpAsinc"><s:param name="pagina" value="%{pagina-1}"/></s:url>">&laquo; prec</a></s:if><s:else><a href="#">&laquo; prec</a></s:else></li>
-								
-								<s:iterator id="p" begin="numeroPaginaInizio" end="numeroPaginaFine">
-									<li <s:if test="%{(#p-1) eq listaPaginata.paginaCorrente}">class="active"</s:if>><a href="<s:url method="update" action="notifichePendentiOpAsinc"><s:param name="pagina" value="%{#p-1}"/></s:url>"><s:property/></a></li>
-								</s:iterator>
-								
-								<li><s:if test="listaPaginata.hasPaginaSuccessiva"><a href="<s:url method="update" action="notifichePendentiOpAsinc"><s:param name="pagina" value="%{pagina + 1}"/></s:url>">succ &raquo;</a></s:if><s:else><a href="#">succ &raquo;</a></s:else></li>
-								<li><s:if test="not listaPaginata.ultimaPagina"><a href="<s:url method="update" action="notifichePendentiOpAsinc"><s:param name="pagina" value="%{listaPaginata.totalePagine-1}"/></s:url>">fine &raquo;</a></s:if><s:else><a href="#">fine &raquo;</a></s:else></li>              
-							  </ul>
-							</div>         
-					 </div>  
-				</div> 
+			<div class="row pagination_conth">
+				 <div id="risultatiricerca_info2" class="span6"><s:property value="listaPaginata.numeroElementoInizio"/> - <s:property value="listaPaginata.numeroElementoFine"/>
+				  	 di <s:property value="listaPaginata.totaleElementi"/> risultati</div>   
+				  <div class="span6">      
+				           
+					  <div id="paginazione2" class="pagination pagination-right">
+						  <ul>
+						  	<s:hidden name="pagina" id="numeroPaginaCorrente" />
+							<li><s:if test="not listaPaginata.primaPagina"><a href="<s:url action="notifichePendentiOpAsinc_update"><s:param name="pagina" value="0"/></s:url>">&laquo; inizio</a></s:if><s:else><a href="#">&laquo; inizio</a></s:else></li>
+							<s:url action="notifichePendentiOpAsinc_update" var="pagPrec"><s:param name="pagina" value="%{(pagina-1)}"/></s:url>
+							<li><s:if test="listaPaginata.hasPaginaPrecedente"><a href="<s:property value="#pagPrec"/>">&laquo; prec</a></s:if><s:else><a href="#">&laquo; prec</a></s:else></li>
+							<s:iterator var="p" begin="numeroPaginaInizio" end="numeroPaginaFine">
+								<li <s:if test="%{(#p-1) eq listaPaginata.paginaCorrente}">class="active"</s:if>><a href="<s:url action="notifichePendentiOpAsinc_update"><s:param name="pagina" value="%{#p-1}"/></s:url>"><s:property/></a></li>
+							</s:iterator>
+							<s:url action="notifichePendentiOpAsinc_update" var="pagSucc"><s:param name="pagina" value="%{(pagina + 1)}"/></s:url>
+							<li><s:if test="listaPaginata.hasPaginaSuccessiva"><a href="<s:property value="#pagSucc"/>">succ &raquo;</a></s:if><s:else><a href="#" id="pagSucc">succ &raquo;</a></s:else></li>
+							<li><s:if test="not listaPaginata.ultimaPagina"><a href="<s:url action="notifichePendentiOpAsinc_update"><s:param name="pagina" value="%{(listaPaginata.totalePagine-1)}"/></s:url>">fine &raquo;</a></s:if><s:else><a href="#">fine &raquo;</a></s:else></li>              
+						  </ul>
+					</div>         
+				</div>  
+			</div> 
 				
 				
 			 
@@ -235,7 +236,7 @@ SPDX-License-Identifier: EUPL-1.2
 			<div class="Border_line"></div>
 
 		</fieldset>
-		<p class="margin-medium"><a class="btn btn-secondary" href="<s:url action="notifichePendentiOpAsinc.indietro"/>">indietro</a> </p>       
+		<p class="margin-medium"><a class="btn btn-secondary" href="<s:url action="notifichePendentiOpAsinc_indietro"/>">indietro</a> </p>       
           
       </s:form>
     </div>
@@ -245,11 +246,16 @@ SPDX-License-Identifier: EUPL-1.2
 
 <script type="text/javascript">
 
+		//SIAC-7573
+		if($("#idFlagAltriUtenti").val() === 'true' && $('#hiddenFlagAltriUtenti').val() === 'true' ){
+			$("#idFlagAltriUtenti").attr("checked", "checked");
+		}
 	
 		function salvaValoreCheck(){
-			
+
+
 			//alert("xxxxxxxxxxx salvaValoreCheck xxxxxxxxxxxxxx");
-			
+
 			//$('input[name=foo]').is(':checked')
 			// La variabile 'valore' conterrà il value del checkbox se questo è selezionato, altrimenti 'null'.
 			var valore = $("#idFlagAltriUtenti:checked").val();
@@ -262,7 +268,7 @@ SPDX-License-Identifier: EUPL-1.2
 
 			//alert("valore hidden: " + $("#hiddenFlagAltriUtenti").val());
 		}
-	
+		
 
 </script>
 	

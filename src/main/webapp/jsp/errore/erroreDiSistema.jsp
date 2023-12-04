@@ -10,8 +10,34 @@ SPDX-License-Identifier: EUPL-1.2
 <%-- Inclusione head e CSS --%>
 <s:include value="/jsp/include/head.jsp" />
 
-<%-- Inclusione selezioneAnno --%>
-<s:include value="/jsp/include/selezioneAnno.jsp" />
+
+
+<%-- SIAC-7614 --%>
+
+<%-- //////////////////////////////////////////////////////////////////////////////// --%>
+<%-- **********************  inclusione Banner portale   **************************** --%>
+
+<r:include url="/ris/servizi/siac/include/portalheader.html" resourceProvider="rp"/>
+
+<%-- nel prototipo statico si chiama navbar.html  -->
+<%--  include la combo per selezionare l'anno tra quelli proposti e visualizza le info dell'utente --%>
+
+<div class="navbarLogin">
+	<div class="container-fluid">
+		<s:include value="../include/selezioneAnno.jsp" />
+	  	
+		<s:include value="../include/enteAccountOperatoreLogout.jsp" />
+	</div>
+</div>
+
+<r:include url="/ris/servizi/siac/include/applicationHeader.html" resourceProvider="rp"/>
+
+<%-- **********************  fine inclusione Banner portale   *********************** --%>
+<%-- //////////////////////////////////////////////////////////////////////////////// --%>
+
+<%-- SIAC-7614 --%>
+
+
 
 <%--breadcumb.JSP --%>
 <div class="row-fluid">
